@@ -35,7 +35,10 @@ The dataset `diabetes_unclean.csv` contains various features related to patient 
 
 
 ___
-This repository and this readme files are to be considered 'Work in progress'
+### Disclaimer  
+This repository and its README file should be considered a "Work in Progress."
+
+This repository is not intended to have any scientific or research value. It is part of an educational project aimed at learning and applying the concepts taught in the **Programming and Database** course. The project is purely didactic and should be understood as such, without any claims of accuracy, completeness, or professional applicability.  
 
 ---  
 Feel free to contribute or raise issues if you have suggestions or encounter problems.  
