@@ -26,19 +26,20 @@ The goal of this project is to analyze and predict the likelihood of diabetes in
 
 ## Dataset  
 The dataset `diabetes_unclean.csv` contains various features related to patient health. These features will be analyzed and extracted during the data cleaning and EDA phases to determine their relevance for prediction.  
+Source: [Kaggle - Diabetes unclean dataset](https://www.kaggle.com/datasets/kabirolawalemohammed/diabetes-unclean)
 
 ## Repository Structure  
 - `data/`: Contains the raw dataset (`diabetes_unclean.csv`) and any processed datasets.  
 - `notebooks/`: Jupyter notebooks for data cleaning, EDA, and modeling.  
 - `src/`: Python scripts for data processing and model development.  
-- `results/`: Outputs, visualizations, and model evaluation results.  
+- `results/`: Outputs, visualizations, and model evaluation results.
+- `abstract/`: LaTex abstract of the project 
 
 
 ___
 ### Disclaimer  
-This repository and its README file should be considered a "Work in Progress."
+**This repository and its README file should be considered a "Work in Progress."**  - 2025/03/34 -
 
 This repository is not intended to have any scientific or research value. It is part of an educational project aimed at learning and applying the concepts taught in the **Programming and Database** course. The project is purely didactic and should be understood as such, without any claims of accuracy, completeness, or professional applicability.  
 
 ---  
-Feel free to contribute or raise issues if you have suggestions or encounter problems.  
