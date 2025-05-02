@@ -12,7 +12,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-#to run streamlit webapp run 'streamlit run streamlit_test.py' in the terminal
+# to run streamlit webapp run 'streamlit run ST_EDA_prediciton.py' in the terminal
+
+
 
 # Title and description
 st.title("Diabetes Dataset: data-cleaning, EDA and Prediction")
@@ -231,7 +233,7 @@ st.subheader("Boxplots for Suspicious Features")
 st.markdown("Visualizing the distribution of features with high standard deviation to identify outliers.")
 
 for i, (feature, lower, upper) in enumerate(zip(features_high_std, temp_limits_lower, temp_limits_upper)):
-    fig, ax = plt.subplots(figsize=(10, 3))
+    fig, ax = plt.subplots(figsize=(10, 2))
     
     # Create horizontal boxplot
     sns.boxplot(data=dataset[feature], orient='h', ax=ax, color='lightblue')
@@ -251,20 +253,21 @@ for i, (feature, lower, upper) in enumerate(zip(features_high_std, temp_limits_l
 
 
 # Create a DataFrame to store the results
-threshold_table = pd.DataFrame({            # a dataframe containing the features with high std, upper and lower limits
+threshold_table = pd.DataFrame({
     'Feature': features_high_std,           # List of features with high standard deviation
     'Upper Threshold': temp_limits_upper,   # Corresponding upper thresholds for each feature
     'Lower Threshold': temp_limits_lower,   # Corresponding lower thresholds for each feature
     'Above Upper Threshold': [
-        #SELECT dataset[feature] WHERE dataset[feature] > upper limit for that feature
-        dataset[feature][dataset[feature] > temp_limits_upper[i]].count()   # Count values above upper threshold for each feature in the list
+        dataset[feature][dataset[feature] > temp_limits_upper[i]].count()   # Count values above upper threshold
+        for i, feature in enumerate(features_high_std)
     ],
     'Below Lower Threshold': [
-        dataset[feature][dataset[feature] < temp_limits_lower[i]].count()  # Count values below the lower threshold
+        dataset[feature][dataset[feature] < temp_limits_lower[i]].count()   # Count values below lower threshold
         for i, feature in enumerate(features_high_std)
     ]
 })
-# Add columns to the threshold table for the percentage of outliers
+
+# Add columns for the percentage of outliers
 threshold_table['% Above Upper Threshold'] = (threshold_table['Above Upper Threshold'] / len(dataset)) * 100
 threshold_table['% Below Lower Threshold'] = (threshold_table['Below Lower Threshold'] / len(dataset)) * 100
 
@@ -297,9 +300,9 @@ st.markdown("---")
 
 
 # Scatterplot for TG vs VLDL
-st.subheader("Scatterplot: TG vs VLDL")
-fig, ax = plt.subplots(figsize=(7, 5))
-sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.5)
+st.subheader("TG and VLDL Analysis")
+fig, ax = plt.subplots(figsize=(10, 5))
+sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.3)
 ax.set_title("Scatterplot: TG vs VLDL")
 st.pyplot(fig)
 
@@ -331,7 +334,7 @@ dataset.loc[dataset['VLDL'] > 4, 'VLDL'] = (dataset['VLDL'] * 5.5 / 38.67) / 2.2
 
 # Scatterplot after conversion
 st.subheader("Scatterplot After VLDL Conversion")
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(10, 5))
 sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.5)
 ax.set_title("Scatterplot: TG vs VLDL (After Conversion)")
 st.pyplot(fig)
@@ -346,18 +349,6 @@ st.write(f"Percentage of rows with NaN values: {percentage_with_nan:.2f}%")
 dataset.dropna(inplace=True)
 st.write("Rows with NaN values have been removed.")
 st.write("Updated dataset shape:", dataset.shape)
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -442,6 +433,83 @@ plt.xticks(rotation=90, ha='right')
 plt.yticks()
 st.pyplot(fig)
 
+# Correlation with Target Analysis
+st.markdown("---")
+st.header("Features Most Correlated with Diabetes")
+st.markdown("""
+We can see in the correlation heatmap that the features more correlated with CLASS (diabetes status) are:
+- **HbA1c**: Hemoglobin A1c percentage (indicates average blood sugar levels)
+- **BMI**: Body Mass Index
+- **AGE**: Patient's age
+    
+Let's explore these key features in more detail.
+""")
+
+# Create plots for these key features
+key_features = ['HbA1c', 'BMI', 'AGE']
+
+# Box plots comparing distribution by diabetes status (horizontal layout)
+st.subheader("Distribution Comparison by Diabetes Status")
+
+# Create a single figure with 3 subplots in a row
+fig, axes = plt.subplots(1, 3, figsize=(10, 5))
+
+# Create boxplots for each key feature
+sns.boxplot(x='CLASS', y='HbA1c', data=dataset, ax=axes[0], palette=['lightblue', 'salmon'])
+sns.boxplot(x='CLASS', y='BMI', data=dataset, ax=axes[1], palette=['lightblue', 'salmon'])
+sns.boxplot(x='CLASS', y='AGE', data=dataset, ax=axes[2], palette=['lightblue', 'salmon'])
+
+# Set titles and labels
+axes[0].set_title("HbA1c by Diabetes Status")
+axes[1].set_title("BMI by Diabetes Status")
+axes[2].set_title("Age by Diabetes Status")
+
+# Set x-axis labels
+for ax in axes:
+    ax.set_xlabel("Diabetes Status (0=No, 1=Yes)")
+
+# Adjust layout to make room for text
+plt.tight_layout()
+st.pyplot(fig)
+
+# Add interpretations under each plot
+st.markdown("""
+**Key Observations**:
+- **HbA1c**: Clearly higher values in diabetic patients, as expected since it directly measures blood glucose control.
+- **BMI**: Diabetic patients tend to have higher BMI values, though significant overlap exists on the lower end.
+- **Age**: Diabetic patients are generally older, but the wide distribution shows diabetes affects people across varied age ranges.
+""")
+
+# 3D scatter to visualize the three features
+st.subheader("3D Visualization of Key Features")
+fig = plt.figure(figsize=(10, 8))
+ax = fig.add_subplot(111, projection='3d')
+colors = ['blue', 'salmon']
+for i, label in enumerate(['Non-Diabetic', 'Diabetic']):
+    subset = dataset[dataset['CLASS'] == i]
+    ax.scatter(
+        subset['HbA1c'], 
+        subset['BMI'], 
+        subset['AGE'],
+        c=colors[i],
+        label=label,
+        alpha=0.6,
+        s=50
+    )
+ax.set_xlabel('HbA1c')
+ax.set_ylabel('BMI')
+ax.set_zlabel('Age', labelpad=-8)
+ax.legend()
+ax.set_title('3D Scatter Plot of Key Diabetes Predictors')
+st.pyplot(fig)
+st.markdown("""
+        **Observation**: Despite the strong imbalance in the dataset, we can observe a distinct clustering of patients with similar characteristics who don't have diabetes (represented by blue points). These non-diabetic patients generally show lower values across all three key predictors: HbA1c, BMI, and age. 
+        While there is some overlap between the two groups, particularly in the middle ranges, the separation is still visible, confirming that these three features together provide meaningful predictive power for diabetes status. The salmon-colored points (diabetic patients) tend to occupy the higher ranges of these measurements, especially for HbA1c values.
+        """)
+
+
+
+st.markdown("""---""")
 
 # Prediction Section
 st.header("Model Selection and Training")
@@ -451,22 +519,20 @@ target_feature = 'CLASS'
 X = dataset.drop(columns=[target_feature])
 y = dataset[target_feature]
 
-# Educational box about train-test splitting
+# Train-test splitting
 st.markdown("""
 ### Understanding Train-Test Split
 Training a machine learning model requires dividing the dataset into:
 - **Training set**: Used to train the model (typically 70-80% of data)
 - **Testing set**: Used to evaluate model performance on unseen data
 
-We use `stratify=y` to ensure both sets have the same class distribution proportion,
-which is critical for imbalanced datasets like ours.
 """)
 
 # Split dataset
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42, stratify=y)
+    X, y, test_size=0.2, random_state=42)
 
-# Educational box about class imbalance
+# Class imbalance
 st.markdown("""
 ### Class Imbalance in Diabetes Dataset
 This dataset has more diabetic than non-diabetic patients, creating a class imbalance.
@@ -474,11 +540,6 @@ Training on imbalanced data can lead to:
 - Models biased toward the majority class
 - Poor predictive performance on the minority class
 - Misleadingly high accuracy metrics
-
-To address this, we can either:
-- Balance the dataset using undersampling/oversampling
-- Use class weights in the model
-- Apply specialized algorithms for imbalanced data
 """)
 
 # Create a dataframe with features and target for the training set
@@ -517,8 +578,7 @@ train_balanced = pd.concat([class_0, class_1_under]).sample(frac=1, random_state
 X_train_bal = train_balanced.drop(columns=['CLASS'])
 y_train_bal = train_balanced['CLASS']
 
-# Interactive model selection and training
-st.subheader("Interactive Model Training")
+st.subheader("Models Used for Prediction")
 
 # Models dictionary
 models = {
@@ -528,6 +588,142 @@ models = {
     "Random Forest": RandomForestClassifier(random_state=95)
 }
 
+# Display available machine learning models
+st.markdown("""
+We will use the following machine learning models:
+- **Logistic Regression**: A linear model for binary classification
+- **Decision Tree**: A tree-based model that makes decisions based on feature thresholds
+- **K-Nearest Neighbors**: A non-parametric model that classifies based on closest training examples
+- **Random Forest**: An ensemble model that combines multiple decision trees for improved performance
+""")
+
+
+# Benchmark all models
+st.subheader("Model Benchmarks")
+st.markdown("Comparing all models on both balanced and imbalanced datasets")
+
+if st.button("Run All Benchmarks", type="primary"):
+    with st.spinner("Running benchmarks on all models..."):
+        # Prepare a dataframe to store results
+        results = []
+        
+        # Run benchmarks for each model
+        for model_name, model_obj in models.items():
+            # Train on balanced dataset
+            model_bal = models[model_name]
+            model_bal.fit(X_train_bal, y_train_bal)
+            y_pred_bal = model_bal.predict(X_test)
+            
+            # Calculate metrics for balanced training
+            acc_bal = accuracy_score(y_test, y_pred_bal)
+            prec_bal = precision_score(y_test, y_pred_bal)
+            recall_bal = recall_score(y_test, y_pred_bal)
+            f1_bal = f1_score(y_test, y_pred_bal)
+            
+            # Train on imbalanced dataset
+            model_imbal = models[model_name]
+            model_imbal.fit(X_train, y_train)
+            y_pred_imbal = model_imbal.predict(X_test)
+            
+            # Calculate metrics for imbalanced training
+            acc_imbal = accuracy_score(y_test, y_pred_imbal)
+            prec_imbal = precision_score(y_test, y_pred_imbal)
+            recall_imbal = recall_score(y_test, y_pred_imbal)
+            f1_imbal = f1_score(y_test, y_pred_imbal)
+            
+            # Store results
+            results.append({
+                'Model': model_name,
+                'Dataset': 'Balanced',
+                'Accuracy': acc_bal,
+                'Precision': prec_bal,
+                'Recall': recall_bal,
+                'F1': f1_bal
+            })
+            
+            results.append({
+                'Model': model_name,
+                'Dataset': 'Imbalanced',
+                'Accuracy': acc_imbal,
+                'Precision': prec_imbal,
+                'Recall': recall_imbal,
+                'F1': f1_imbal
+            })
+        
+        # Convert results to DataFrame
+        results_df = pd.DataFrame(results)
+        
+        # Display results table
+        st.write("Benchmark Results:")
+        st.dataframe(results_df.style.format({
+            'Accuracy': '{:.2f}',
+            'Precision': '{:.2f}',
+            'Recall': '{:.2f}',
+            'F1': '{:.2f}'
+        }))
+        
+        # Create visual comparison
+        st.subheader("Visual Comparison of Models")
+        
+        # Reshape data for better visualization
+        results_long = pd.melt(
+            results_df, 
+            id_vars=['Model', 'Dataset'], 
+            value_vars=['Accuracy', 'Precision', 'Recall', 'F1'],
+            var_name='Metric', 
+            value_name='Score'
+        )
+        
+        # Create grouped bar chart
+        fig, ax = plt.subplots(figsize=(12, 8))
+        
+        # Use seaborn for better visualization
+        chart = sns.catplot(
+            data=results_long,
+            x='Model',
+            y='Score',
+            hue='Dataset',
+            col='Metric',
+            kind='bar',
+            height=4,
+            aspect=0.8,
+            palette='viridis',
+            alpha=0.8,
+            legend_out=False
+        )
+        
+        # Customize the plot
+        chart.set_xticklabels(rotation=45, ha='right')
+        chart.fig.suptitle('Model Performance Comparison', fontsize=16, y=1.05)
+        chart.set_titles("{col_name}")
+        
+        # Display the plot
+        st.pyplot(chart.fig)
+        
+        # Create heatmap for compact visualization
+        st.subheader("Performance Heatmap")
+        
+        # Pivot the data for the heatmap
+        for metric in ['Accuracy', 'Precision', 'Recall', 'F1']:
+            heatmap_data = results_df.pivot(index='Model', columns='Dataset', values=metric)
+            
+            fig, ax = plt.subplots(figsize=(8, 4))
+            sns.heatmap(
+                heatmap_data, 
+                annot=True, 
+                fmt=".2f", 
+                cmap="YlGnBu", 
+                linewidths=0.5,
+                vmin=0.5,
+                vmax=1.0
+            )
+            plt.title(f"{metric} Comparison")
+            st.pyplot(fig)
+
+
+st.markdown("---")
+
+
 # User selects model and balancing option
 col1, col2 = st.columns(2)
 with col1:
@@ -535,133 +731,171 @@ with col1:
 with col2:
     balance_option = st.radio("Dataset balancing:", ["Balanced dataset", "Original imbalanced dataset"])
 
-model = models[selected_model_name]
-
+model = models[selected_model_name] # we use the model selected by the user as key in the dictionary of models
 # Train based on user selection
-if st.button("Train Model", type="primary"):
-    with st.spinner("Training model..."):
-        if balance_option == "Balanced dataset":
-            model.fit(X_train_bal, y_train_bal)
-            st.success(f"{selected_model_name} trained on balanced dataset!")
-            training_set = "balanced"
-        else:
-            model.fit(X_train, y_train)
-            st.success(f"{selected_model_name} trained on original imbalanced dataset!")
-            training_set = "imbalanced"
-        
-        # Make predictions
-        y_pred = model.predict(X_test)
-        
-        # Evaluation metrics
-        acc = accuracy_score(y_test, y_pred)
-        prec = precision_score(y_test, y_pred)
-        recall_0 = recall_score(y_test, y_pred, pos_label=0)
-        recall_1 = recall_score(y_test, y_pred, pos_label=1)
-        f1 = f1_score(y_test, y_pred)
-        
-        # Display metrics
-        st.subheader(f"Model Evaluation ({training_set} training)")
-        
-        # Create columns for metrics display
-        metric_col1, metric_col2 = st.columns(2)
-        
-        with metric_col1:
-            st.metric("Accuracy", f"{acc:.2f}")
-            st.metric("Precision", f"{prec:.2f}")
-            st.metric("F1-Score", f"{f1:.2f}")
-        
-        with metric_col2:
-            st.metric("Recall (Non-Diabetic)", f"{recall_0:.2f}")
-            st.metric("Recall (Diabetic)", f"{recall_1:.2f}")
-        
-        # Explanation of metrics
-        st.markdown("""
-        ### Understanding the Metrics
-        - **Accuracy**: Overall correctness of the model
-        - **Precision**: How many of the predicted diabetic cases are actually diabetic
-        - **Recall (Diabetic)**: How many actual diabetic cases the model correctly identified
-        - **Recall (Non-Diabetic)**: How many actual non-diabetic cases the model correctly identified
-        - **F1-Score**: Harmonic mean of precision and recall
-        
-        In medical diagnostics, high recall for the diabetic class is often prioritized to minimize missed diagnoses.
-        """)
-        
-        # Feature importance (if Random Forest)
-        if selected_model_name == "Random Forest":
-            st.subheader("Feature Importances")
-            feature_importances = model.feature_importances_
-            sorted_idx = np.argsort(feature_importances)[::-1]
-            sorted_features = X.columns[sorted_idx]
-            sorted_importances = feature_importances[sorted_idx]
-            
-            fig, ax = plt.subplots(figsize=(10, 5))
-            sns.barplot(x=sorted_importances, y=sorted_features, ax=ax, palette="viridis")
-            ax.set_title(f"Feature Importance (Random Forest - {training_set} training)")
-            st.pyplot(fig)
-            
-            st.markdown("""
-            ### Feature Importance Interpretation
-            The bars represent how much each feature contributed to the model's decisions.
-            Longer bars indicate features that have greater influence on predicting diabetes status.
-            """)
+# if we want to use the balanced dataset:
+if balance_option == "Balanced dataset":
+    model.fit(X_train_bal, y_train_bal)
+    st.success(f"{selected_model_name} trained on balanced dataset!")
+    training_set = "balanced"
+
+
+
+# if we want to use the unbalanced dataset:    
+else:
+    model.fit(X_train, y_train)
+    st.success(f"{selected_model_name} trained on original imbalanced dataset!")
+    training_set = "unbalanced"
+
+# Make predictions
+y_pred = model.predict(X_test)
+
+# Evaluation metrics
+acc = accuracy_score(y_test, y_pred)
+prec = precision_score(y_test, y_pred)
+recall_0 = recall_score(y_test, y_pred, pos_label=0)
+recall_1 = recall_score(y_test, y_pred, pos_label=1)
+f1 = f1_score(y_test, y_pred)
+
+# Display metrics
+st.subheader(f"Model Evaluation ({training_set} training)")
+
+# metrics on two colimns
+metric_col1, metric_col2 = st.columns(2)
+
+with metric_col1:
+    st.metric("Accuracy", f"{acc:.2f}")
+    st.metric("Precision", f"{prec:.2f}")
+    st.metric("F1-Score", f"{f1:.2f}")
+
+with metric_col2:
+    st.metric("Recall (Non-Diabetic)", f"{recall_0:.2f}")
+    st.metric("Recall (Diabetic)", f"{recall_1:.2f}")
+
+# Feature importance (if Random Forest is selected, we can show it) 
+if selected_model_name == "Random Forest":
+    st.subheader("Feature Importances")
+    feature_importances = model.feature_importances_
+    sorted_idx = np.argsort(feature_importances)[::-1]
+    sorted_features = X.columns[sorted_idx]
+    sorted_importances = feature_importances[sorted_idx]
+    
+    fig, ax = plt.subplots(figsize=(10, 5))
+    sns.barplot(x=sorted_importances, y=sorted_features, ax=ax, palette="viridis")
+    ax.set_title(f"Feature Importance (Random Forest - {training_set} training)")
+    st.pyplot(fig)
+    
+    st.markdown("""
+    ### Feature Importance Interpretation
+    The bars represent how much each feature contributed to the model's decisions.
+    Longer bars indicate features that have greater influence on predicting diabetes status.
+    """)
+
+# Explanation of metrics
+st.markdown("""
+### Understanding the Metrics
+- **Accuracy**: Overall correctness of the model
+- **Precision**: How many of the predicted diabetic cases are actually diabetic
+- **Recall (Diabetic)**: How many actual diabetic cases the model correctly identified
+- **Recall (Non-Diabetic)**: How many actual non-diabetic cases the model correctly identified
+- **F1-Score**: Harmonic mean of precision and recall
+""")
+
 
 # Prediction on new input
 st.header("Make a New Prediction")
 st.markdown("Adjust the sliders below to input values and click 'Predict' to get a diabetes prediction.")
 
-def user_input():
-    inputs = {}
-    col1, col2 = st.columns(2)
+# Define a function to create the input form
+def user_input() -> pd.DataFrame:
+    """
+    Create a form for user input of patient data.
+    Returns:
+        pd.DataFrame: DataFrame containing the user input values.
+    """
+
+    # Create a temporary dictionary to store input data:
+    input_data = {}
     
-    # Divide features between two columns for better layout
-    cols = list(X.columns)
-    half = len(cols) // 2
+    st.markdown("### Enter Patient Information")
+    
+    # Create multiple columns for better layout
+    col1, col2, col3 = st.columns(3)
     
     with col1:
-        for col in cols[:half]:
-            min_val = float(X[col].min())
-            max_val = float(X[col].max())
-            mean_val = float(X[col].mean())
-            inputs[col] = st.slider(f"{col}", min_value=min_val, max_value=max_val, value=mean_val)
+        input_data['Gender'] = st.selectbox('Gender', options=['Male', 'Female'])
+        input_data['AGE'] = st.slider('Age', min_value=20, max_value=90, value=50, step=1)
+        input_data['Urea'] = st.slider('Urea (mmol/L)', min_value=1.0, max_value=25.0, value=5.0, step=0.1)
+        input_data['Cr'] = st.slider('Creatinine (μmol/L)', min_value=10.0, max_value=400.0, value=90.0, step=1.0)
     
     with col2:
-        for col in cols[half:]:
-            min_val = float(X[col].min())
-            max_val = float(X[col].max())
-            mean_val = float(X[col].mean())
-            inputs[col] = st.slider(f"{col}", min_value=min_val, max_value=max_val, value=mean_val)
-            
-    return pd.DataFrame([inputs])
+        input_data['HbA1c'] = st.slider('HbA1c (%)', min_value=3.0, max_value=15.0, value=5.7, step=0.1)
+        input_data['Chol'] = st.slider('Cholesterol (mmol/L)', min_value=2.0, max_value=10.0, value=5.0, step=0.1)
+        input_data['TG'] = st.slider('Triglycerides (mmol/L)', min_value=0.1, max_value=10.0, value=1.5, step=0.1)
+        input_data['HDL'] = st.slider('HDL (mmol/L)', min_value=0.3, max_value=5.0, value=1.2, step=0.1)
+    
+    with col3:
+        input_data['LDL'] = st.slider('LDL (mmol/L)', min_value=0.5, max_value=7.0, value=3.0, step=0.1)
+        input_data['VLDL'] = st.slider('VLDL (mmol/L)', min_value=0.05, max_value=3.0, value=0.6, step=0.05)
+        input_data['BMI'] = st.slider('BMI (kg/m²)', min_value=15.0, max_value=45.0, value=25.0, step=0.1)
+    
+
+    # Convert geneder data to numerical values
+    # Convert gender data to numerical values
+    if input_data['Gender'] == 'Male':
+        input_data['Gender'] = 0
+    else:  # 'Female'
+        input_data['Gender'] = 1
+    
+    # Convert the input dictionary to a dataframe
+    input_df = pd.DataFrame([input_data])
+    
+    # Show the entered data
+    st.subheader("Summary of entered patient Data")
+    st.write(input_df)
+
+    # return the dataframe with all the input data
+    return input_df
+
+
 
 # Execute the function to create the input form
-new_data = user_input()
+new_data = user_input() # calling the function to create the input form
 
 # Add prediction button
-if st.button("Predict", type="primary"):
-    if 'model' not in locals() or not hasattr(model, 'predict'):
-        st.error("Please train a model first!")
+if st.button("Predict"):
+    # Check if model is trained, train it if not
+    if not hasattr(model, "classes_"):  # This attribute exists after fitting
+        st.warning("Model not trained yet. Training model with balanced dataset...")
+        model.fit(X_train_bal, y_train_bal)
+        st.success(f"{selected_model_name} trained on balanced dataset!")
+
+    prediction = model.predict(new_data)[0]
+    
+    # Get prediction probability/confidence if the model supports it
+    if hasattr(model, "predict_proba"):     #'hasattr' checks if the model has the method 'predict_proba' 
+        proba = model.predict_proba(new_data)[0]
+        confidence = proba[int(prediction)] * 100  # Convert to percentage
     else:
-        prediction = model.predict(new_data)[0]
+        confidence = "Not available for this model"
+    
+    # Display the prediction result with class label and confidence
+    st.subheader("Prediction Result:")
+    
+    # Create columns for better layout
+    if prediction == 1:
+        st.markdown("### Prediction:")
+        st.markdown("**Diabetic** (Class 1)")
+    else:
+        st.markdown("### Prediction:")
+        st.markdown("**Non-Diabetic** (Class 0)")
+
+    if isinstance(confidence, float):
+        st.markdown("### Confidence Level:")
         
-        # Get prediction probability/confidence if the model supports it
-        if hasattr(model, "predict_proba"):
-            proba = model.predict_proba(new_data)[0]
-            confidence = proba[int(prediction)]
-        else:
-            confidence = "Not available for this model"
+        # Show confidence as percentage with progress bar
+        st.progress(confidence/100)
+        st.markdown(f"**{confidence:.1f}%** confidence in this prediction")
         
-        # Display the prediction result with class label and confidence
-        st.subheader("Prediction Result:")
-        
-        if prediction == 1:
-            st.markdown(f"**Class: 1 - Diabetic**")
-        else:
-            st.markdown(f"**Class: 0 - Non-Diabetic**")
-        
-        st.markdown(f"**Confidence: {confidence:.2f}**" if isinstance(confidence, float) else f"**Confidence: {confidence}**")
-        
-        # Add a visual indicator
-        if prediction == 1:
-            st.error("This individual is predicted to have diabetes.")
-        else:
-            st.success("This individual is predicted to not have diabetes.")
+    else:
+        st.markdown(f"**Confidence: {confidence}**")    
