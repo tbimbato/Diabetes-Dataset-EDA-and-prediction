@@ -12,8 +12,9 @@ from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_sc
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-# to run streamlit webapp run 'streamlit run ST_EDA_prediciton.py' in the terminal
-
+# ======================================================================
+# to run streamlit webapp run 'streamlit run ST_EDA_prediciton.py' in the terminal (same dir of python script)
+# ======================================================================
 
 
 # Title and description
@@ -76,7 +77,7 @@ st.write("Backup of the original dataset has been created as 'diabetes_unclean_b
 
 st.subheader("Null values")
 st.write("Checking for null values in the dataset:")
-col1, col2 = st.columns(2) # Create two columns for better layout
+col1, col2 = st.columns(2) # 2 columns layout
 
 # column 1:
 with col1: 
@@ -161,10 +162,7 @@ dataset.drop(columns=unused_columns, inplace=True)
 st.write(f"The following columns have been removed: {unused_columns}")
 
 # Count the occurrences of each class
-class_counts = dataset['CLASS'].value_counts()
-
-# Calculate the percentage
-class_percentages = (class_counts / len(dataset)) * 100
+class_counts = dataset['CLASS'].value_counts() # count the number of occurrences of each class 
 
 # Page break
 st.markdown("---")
@@ -176,14 +174,16 @@ st.header("Outlier Detection and Handling")
 
 # Statistical Summary
 st.subheader("Statistical Summary of Features")
-columns_to_drop = [col for col in ['Gender', 'AGE'] if col in dataset.columns]
-stats = dataset.drop(columns=columns_to_drop).describe()
-stats_to_show = stats.loc[['mean', 'std', 'min', 'max']]
+columns_to_drop = ['Gender', 'AGE']
+stats = dataset.drop(columns=columns_to_drop).describe() # computing stats excluding 'Gender' and 'AGE'
+stats_to_show = stats.loc[['mean', 'std', 'min', 'max']] # preparing to show only mean, std, min and max
+
 st.write("Statistical summary of features:")
 st.write(stats_to_show)
+
+
 # Outlier Detection Analysis
 st.subheader("Outlier Detection Analysis")
-
 st.markdown("""
 #### Features Requiring Special Attention
 
@@ -211,18 +211,28 @@ Sources: https://www.scymed.com, https://www.my-personaltrainer.it/salute/conver
 """)
 
 # Identify features with high standard deviation
+# features with high standard deviation <- feature where 'std' > ('mean'/2) (we use 'loc(ate)' to get the index of the row)
 features_high_std = stats.columns[stats.loc['std'] > (stats.loc['mean'] / 2)].tolist()
 st.write("Features with high standard deviation:", features_high_std)
 
 # Physiological limits for outlier detection
 st.subheader("Physiological limits vectors")
-temp_limits_upper = [25, 400, 10, 5, 40]
+
+# LIMITS DEFINED -- SEE LINK TO REFERENCE
+temp_limits_upper = [25, 400, 12, 6, 40]
 temp_limits_lower = [1, 10, 0.1, 0.3, 0.05]
 
+# suspicious features were identified in the notebook,
+# Here we reproducing the process, assuming to find the same features
+# And we apply the limits to the same features
+
+# =======================================
+
+# projection to dataframe
 limits_df = pd.DataFrame({
-    "Feature": features_high_std,
-    "Lower Limit": temp_limits_lower,
-    "Upper Limit": temp_limits_upper
+    "Feature": features_high_std,     # vector of features with high standard deviation
+    "Lower Limit": temp_limits_lower, # vector of lower limits
+    "Upper Limit": temp_limits_upper  # vector of upper limits
 })
 
 st.write("Physiological limits for features with high standard deviation:")
@@ -232,6 +242,7 @@ st.dataframe(limits_df)
 st.subheader("Boxplots for Suspicious Features")
 st.markdown("Visualizing the distribution of features with high standard deviation to identify outliers.")
 
+# for each feature with high standard deviation, create a boxplot with upper and lower limits
 for i, (feature, lower, upper) in enumerate(zip(features_high_std, temp_limits_lower, temp_limits_upper)):
     fig, ax = plt.subplots(figsize=(10, 2))
     
@@ -267,7 +278,7 @@ threshold_table = pd.DataFrame({
     ]
 })
 
-# Add columns for the percentage of outliers
+# Storing the percentage of outliers
 threshold_table['% Above Upper Threshold'] = (threshold_table['Above Upper Threshold'] / len(dataset)) * 100
 threshold_table['% Below Lower Threshold'] = (threshold_table['Below Lower Threshold'] / len(dataset)) * 100
 
@@ -282,18 +293,15 @@ st.markdown("""
 Outliers detected in the dataset are replaced with NaN values. This approach allows us to handle extreme values without immediately removing them, preserving the dataset's integrity for further analysis. If the proportion of NaN values becomes significant, additional measures will be considered.
 """)
 
+# Handle outliers for features with high standard deviation
 for i, feature in enumerate(features_high_std):
     lower_limit = temp_limits_lower[i]
     upper_limit = temp_limits_upper[i]
-    values_to_replace = (dataset[feature] < lower_limit) | (dataset[feature] > upper_limit)
-    dataset.loc[values_to_replace, feature] = np.nan
+    # Create a mask for outliers where values are outside the defined limits
+    outlier_mask = (dataset[feature] < lower_limit) | (dataset[feature] > upper_limit)
 
-# Outlier Removal
-for i, feature in enumerate(features_high_std):
-    lower_limit = temp_limits_lower[i]
-    upper_limit = temp_limits_upper[i]
-    values_to_remove = (dataset[feature] < lower_limit) | (dataset[feature] > upper_limit)
-    dataset.loc[values_to_remove, feature] = None
+    # Replace outliers with NaN
+    dataset.loc[outlier_mask, feature] = np.nan
 
 st.markdown("---")
 
@@ -301,7 +309,7 @@ st.markdown("---")
 
 # Scatterplot for TG vs VLDL
 st.subheader("TG and VLDL Analysis")
-fig, ax = plt.subplots(figsize=(10, 5))
+fig, ax = plt.subplots(figsize=(12, 6))
 sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.3)
 ax.set_title("Scatterplot: TG vs VLDL")
 st.pyplot(fig)
@@ -330,11 +338,12 @@ $$\\text{mg/dL} = \\text{mmol/L} \\times 38.67$$
 """)
 
 # Convert VLDL values greater than 4
+# see notebook for reference
 dataset.loc[dataset['VLDL'] > 4, 'VLDL'] = (dataset['VLDL'] * 5.5 / 38.67) / 2.2
 
 # Scatterplot after conversion
 st.subheader("Scatterplot After VLDL Conversion")
-fig, ax = plt.subplots(figsize=(10, 5))
+fig, ax = plt.subplots(figsize=(12, 6))
 sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.5)
 ax.set_title("Scatterplot: TG vs VLDL (After Conversion)")
 st.pyplot(fig)
@@ -349,8 +358,6 @@ st.write(f"Percentage of rows with NaN values: {percentage_with_nan:.2f}%")
 dataset.dropna(inplace=True)
 st.write("Rows with NaN values have been removed.")
 st.write("Updated dataset shape:", dataset.shape)
-
-
 
 
 
@@ -427,7 +434,7 @@ st.pyplot(fig)
 # Correlation Heatmap
 st.header("Correlation heatmap")
 
-fig, ax = plt.subplots(figsize=(10, 5))
+fig, ax = plt.subplots(figsize=(12, 6))
 sns.heatmap(dataset.corr(), annot=True, fmt=".2f", cmap="coolwarm", cbar_kws={'shrink': 0.8}, linewidths=0.5, ax=ax)
 plt.xticks(rotation=90, ha='right')
 plt.yticks()
@@ -452,7 +459,7 @@ key_features = ['HbA1c', 'BMI', 'AGE']
 st.subheader("Distribution Comparison by Diabetes Status")
 
 # Create a single figure with 3 subplots in a row
-fig, axes = plt.subplots(1, 3, figsize=(10, 5))
+fig, axes = plt.subplots(1, 3, figsize=(12, 6))
 
 # Create boxplots for each key feature
 sns.boxplot(x='CLASS', y='HbA1c', data=dataset, ax=axes[0], palette=['lightblue', 'salmon'])
@@ -603,12 +610,13 @@ st.subheader("Model Benchmarks")
 st.markdown("Comparing all models on both balanced and imbalanced datasets")
 
 if st.button("Run All Benchmarks", type="primary"):
-    with st.spinner("Running benchmarks on all models..."):
-        # Prepare a dataframe to store results
+    with st.spinner("Running benchmarks on all models..."): # computing benchmarks
+        # Prepare a list to store results
         results = []
         
         # Run benchmarks for each model
-        for model_name, model_obj in models.items():
+            # for each model and object of model in the dictionary of models
+        for model_name, model_obj in models.items(): 
             # Train on balanced dataset
             model_bal = models[model_name]
             model_bal.fit(X_train_bal, y_train_bal)
@@ -631,7 +639,8 @@ if st.button("Run All Benchmarks", type="primary"):
             recall_imbal = recall_score(y_test, y_pred_imbal)
             f1_imbal = f1_score(y_test, y_pred_imbal)
             
-            # Store results
+            # BALANCED DATASET
+            # Store results in the list 'results'
             results.append({
                 'Model': model_name,
                 'Dataset': 'Balanced',
@@ -641,6 +650,8 @@ if st.button("Run All Benchmarks", type="primary"):
                 'F1': f1_bal
             })
             
+            # UNBALANCED DATASET
+            # Store results in the list 'results'
             results.append({
                 'Model': model_name,
                 'Dataset': 'Imbalanced',
@@ -656,17 +667,18 @@ if st.button("Run All Benchmarks", type="primary"):
         # Display results table
         st.write("Benchmark Results:")
         st.dataframe(results_df.style.format({
-            'Accuracy': '{:.2f}',
-            'Precision': '{:.2f}',
-            'Recall': '{:.2f}',
-            'F1': '{:.2f}'
+            'Accuracy':     '{:.2f}',
+            'Precision':    '{:.2f}',
+            'Recall':       '{:.2f}',
+            'F1':           '{:.2f}' 
         }))
         
         # Create visual comparison
         st.subheader("Visual Comparison of Models")
         
         # Reshape data for better visualization
-        results_long = pd.melt(
+        results_long = pd.melt( # pd.melt() is used to reshape the DataFrame 
+            # here we 're reshaping the DataFrame to have one row per metric per model
             results_df, 
             id_vars=['Model', 'Dataset'], 
             value_vars=['Accuracy', 'Precision', 'Recall', 'F1'],
@@ -676,20 +688,18 @@ if st.button("Run All Benchmarks", type="primary"):
         
         # Create grouped bar chart
         fig, ax = plt.subplots(figsize=(12, 8))
-        
+
         # Use seaborn for better visualization
-        chart = sns.catplot(
-            data=results_long,
-            x='Model',
-            y='Score',
-            hue='Dataset',
-            col='Metric',
-            kind='bar',
-            height=4,
-            aspect=0.8,
-            palette='viridis',
-            alpha=0.8,
-            legend_out=False
+        chart = sns.catplot( #categorical plot
+            data=results_long, # take data from the results of benchmarks (reshaped)
+            x='Model',      # x axis is the model name 
+            y='Score',      # y axis is the score of the model
+            hue='Dataset',  #color vary depending on the two version of dataset (balanced or unbalanced)
+            col='Metric',   # create a column for each metric 
+            kind='bar',     # Scatter plot with points adjusted along categorical axis
+            height=4,       # height of each subplot
+            aspect=0.8,     # aspect ratio of each subplot
+            legend_out=False  # legend inside the plot
         )
         
         # Customize the plot
@@ -780,7 +790,7 @@ if selected_model_name == "Random Forest":
     sorted_features = X.columns[sorted_idx]
     sorted_importances = feature_importances[sorted_idx]
     
-    fig, ax = plt.subplots(figsize=(10, 5))
+    fig, ax = plt.subplots(figsize=(12, 6))
     sns.barplot(x=sorted_importances, y=sorted_features, ax=ax, palette="viridis")
     ax.set_title(f"Feature Importance (Random Forest - {training_set} training)")
     st.pyplot(fig)
