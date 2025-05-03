@@ -44,8 +44,8 @@ In the dataset we can access the following feature:
 - **CLASS**: The target variable indicating the presence or absence of diabetes.
 """)
 
-# Load default dataset ('diabetes_unclean.csv')
 
+# Load default dataset ('diabetes_unclean.csv')
 dataset = pd.read_csv("../datasets/diabetes_unclean.csv")
 st.subheader("Dataset Overview")
 st.write(dataset.head())
@@ -181,7 +181,7 @@ stats_to_show = stats.loc[['mean', 'std', 'min', 'max']] # preparing to show onl
 st.write("Statistical summary of features:")
 st.write(stats_to_show)
 
-
+# ======================================================================
 # Outlier Detection Analysis
 st.subheader("Outlier Detection Analysis")
 st.markdown("""
@@ -226,7 +226,6 @@ temp_limits_lower = [1, 10, 0.1, 0.3, 0.05]
 # Here we reproducing the process, assuming to find the same features
 # And we apply the limits to the same features
 
-# =======================================
 
 # projection to dataframe
 limits_df = pd.DataFrame({
@@ -360,8 +359,7 @@ st.write("Rows with NaN values have been removed.")
 st.write("Updated dataset shape:", dataset.shape)
 
 
-
-
+# ======================================================================
 # EDA Section
 st.header("Data Exploration")
 st.header("Categorical Features and population overview")
@@ -537,7 +535,7 @@ Training a machine learning model requires dividing the dataset into:
 
 # Split dataset
 X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.2, random_state=42)
+    X, y, test_size=0.2, random_state=95)
 
 # Class imbalance
 st.markdown("""
@@ -580,12 +578,16 @@ This approach prevents the model from being biased toward predicting diabetes si
 """)
 
 # Undersample the majority class
-class_1_under = class_1.sample(n=len(class_0), random_state=42)
-train_balanced = pd.concat([class_0, class_1_under]).sample(frac=1, random_state=42).reset_index(drop=True)
+class_1_under = class_1.sample(n=len(class_0), random_state=95)
+train_balanced = pd.concat([class_0, class_1_under]).sample(frac=1, random_state=95).reset_index(drop=True)
 X_train_bal = train_balanced.drop(columns=['CLASS'])
 y_train_bal = train_balanced['CLASS']
 
 st.subheader("Models Used for Prediction")
+
+
+# ======================================================================
+# Models and predictions
 
 # Models dictionary
 models = {
@@ -609,126 +611,30 @@ We will use the following machine learning models:
 st.subheader("Model Benchmarks")
 st.markdown("Comparing all models on both balanced and imbalanced datasets")
 
-if st.button("Run All Benchmarks", type="primary"):
-    with st.spinner("Running benchmarks on all models..."): # computing benchmarks
-        # Prepare a list to store results
-        results = []
-        
-        # Run benchmarks for each model
-            # for each model and object of model in the dictionary of models
-        for model_name, model_obj in models.items(): 
-            # Train on balanced dataset
-            model_bal = models[model_name]
-            model_bal.fit(X_train_bal, y_train_bal)
-            y_pred_bal = model_bal.predict(X_test)
-            
-            # Calculate metrics for balanced training
-            acc_bal = accuracy_score(y_test, y_pred_bal)
-            prec_bal = precision_score(y_test, y_pred_bal)
-            recall_bal = recall_score(y_test, y_pred_bal)
-            f1_bal = f1_score(y_test, y_pred_bal)
-            
-            # Train on imbalanced dataset
-            model_imbal = models[model_name]
-            model_imbal.fit(X_train, y_train)
-            y_pred_imbal = model_imbal.predict(X_test)
-            
-            # Calculate metrics for imbalanced training
-            acc_imbal = accuracy_score(y_test, y_pred_imbal)
-            prec_imbal = precision_score(y_test, y_pred_imbal)
-            recall_imbal = recall_score(y_test, y_pred_imbal)
-            f1_imbal = f1_score(y_test, y_pred_imbal)
-            
-            # BALANCED DATASET
-            # Store results in the list 'results'
-            results.append({
-                'Model': model_name,
-                'Dataset': 'Balanced',
-                'Accuracy': acc_bal,
-                'Precision': prec_bal,
-                'Recall': recall_bal,
-                'F1': f1_bal
-            })
-            
-            # UNBALANCED DATASET
-            # Store results in the list 'results'
-            results.append({
-                'Model': model_name,
-                'Dataset': 'Imbalanced',
-                'Accuracy': acc_imbal,
-                'Precision': prec_imbal,
-                'Recall': recall_imbal,
-                'F1': f1_imbal
-            })
-        
-        # Convert results to DataFrame
-        results_df = pd.DataFrame(results)
-        
-        # Display results table
-        st.write("Benchmark Results:")
-        st.dataframe(results_df.style.format({
-            'Accuracy':     '{:.2f}',
-            'Precision':    '{:.2f}',
-            'Recall':       '{:.2f}',
-            'F1':           '{:.2f}' 
-        }))
-        
-        # Create visual comparison
-        st.subheader("Visual Comparison of Models")
-        
-        # Reshape data for better visualization
-        results_long = pd.melt( # pd.melt() is used to reshape the DataFrame 
-            # here we 're reshaping the DataFrame to have one row per metric per model
-            results_df, 
-            id_vars=['Model', 'Dataset'], 
-            value_vars=['Accuracy', 'Precision', 'Recall', 'F1'],
-            var_name='Metric', 
-            value_name='Score'
-        )
-        
-        # Create grouped bar chart
-        fig, ax = plt.subplots(figsize=(12, 8))
 
-        # Use seaborn for better visualization
-        chart = sns.catplot( #categorical plot
-            data=results_long, # take data from the results of benchmarks (reshaped)
-            x='Model',      # x axis is the model name 
-            y='Score',      # y axis is the score of the model
-            hue='Dataset',  #color vary depending on the two version of dataset (balanced or unbalanced)
-            col='Metric',   # create a column for each metric 
-            kind='bar',     # Scatter plot with points adjusted along categorical axis
-            height=4,       # height of each subplot
-            aspect=0.8,     # aspect ratio of each subplot
-            legend_out=False  # legend inside the plot
-        )
-        
-        # Customize the plot
-        chart.set_xticklabels(rotation=45, ha='right')
-        chart.fig.suptitle('Model Performance Comparison', fontsize=16, y=1.05)
-        chart.set_titles("{col_name}")
-        
-        # Display the plot
-        st.pyplot(chart.fig)
-        
-        # Create heatmap for compact visualization
-        st.subheader("Performance Heatmap")
-        
-        # Pivot the data for the heatmap
-        for metric in ['Accuracy', 'Precision', 'Recall', 'F1']:
-            heatmap_data = results_df.pivot(index='Model', columns='Dataset', values=metric)
-            
-            fig, ax = plt.subplots(figsize=(8, 4))
-            sns.heatmap(
-                heatmap_data, 
-                annot=True, 
-                fmt=".2f", 
-                cmap="YlGnBu", 
-                linewidths=0.5,
-                vmin=0.5,
-                vmax=1.0
-            )
-            plt.title(f"{metric} Comparison")
-            st.pyplot(fig)
+
+
+
+
+
+# TODO:
+# Create a dataframe to store the results of each benchmark
+# see updated notebook and use the same approach
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 st.markdown("---")
