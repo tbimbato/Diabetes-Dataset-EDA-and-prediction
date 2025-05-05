@@ -10,7 +10,10 @@ from sklearn.neighbors import KNeighborsClassifier
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 import matplotlib.pyplot as plt
+
 import seaborn as sns
+
+from matplotlib.patches import Patch
 
 # ======================================================================
 # to run streamlit webapp run 'streamlit run ST_EDA_prediciton.py' in the terminal (same dir of python script)
@@ -243,7 +246,7 @@ st.markdown("Visualizing the distribution of features with high standard deviati
 
 # for each feature with high standard deviation, create a boxplot with upper and lower limits
 for i, (feature, lower, upper) in enumerate(zip(features_high_std, temp_limits_lower, temp_limits_upper)):
-    fig, ax = plt.subplots(figsize=(10, 2))
+    fig, ax = plt.subplots(figsize=(12, 2))
     
     # Create horizontal boxplot
     sns.boxplot(data=dataset[feature], orient='h', ax=ax, color='lightblue')
@@ -283,7 +286,7 @@ threshold_table['% Below Lower Threshold'] = (threshold_table['Below Lower Thres
 
 # Display the table
 st.subheader("Threshold Analysis Table")
-st.write(threshold_table)
+st.dataframe(threshold_table)
 
 
 # Replace outliers with NaN
@@ -308,7 +311,7 @@ st.markdown("---")
 
 # Scatterplot for TG vs VLDL
 st.subheader("TG and VLDL Analysis")
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(12, 8))
 sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.3)
 ax.set_title("Scatterplot: TG vs VLDL")
 st.pyplot(fig)
@@ -342,7 +345,7 @@ dataset.loc[dataset['VLDL'] > 4, 'VLDL'] = (dataset['VLDL'] * 5.5 / 38.67) / 2.2
 
 # Scatterplot after conversion
 st.subheader("Scatterplot After VLDL Conversion")
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(12, 8))
 sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.5)
 ax.set_title("Scatterplot: TG vs VLDL (After Conversion)")
 st.pyplot(fig)
@@ -369,7 +372,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("Gender Distribution:")
     gender_counts = dataset['Gender'].value_counts()
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(6, 6))
     sns.barplot(x=gender_counts.index, y=gender_counts.values, ax=ax)
     ax.set_xticklabels(['Male', 'Female'])
     ax.set_xlabel("Gender")
@@ -380,7 +383,7 @@ with col1:
 with col2:
     st.subheader("Patients with Diabetes:")
     class_counts = dataset['CLASS'].value_counts()
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(6, 6))
     sns.barplot(x=class_counts.index, y=class_counts.values, ax=ax)
     ax.set_xticklabels(['No Diabetes (0)', 'Has Diabetes (1)'])
     ax.set_xlabel("Diabetes Status")
@@ -390,7 +393,7 @@ with col2:
 
 with col3:
     st.subheader("Age Distribution (KDE)")
-    fig, ax = plt.subplots(figsize=(5, 5))
+    fig, ax = plt.subplots(figsize=(6, 6))
     sns.kdeplot(dataset['AGE'], shade=True, ax=ax)
     ax.set_xlabel("Age")
     ax.set_ylabel("Density")
@@ -404,7 +407,7 @@ st.markdown("---")
 st.header("Feature Distribution")
 selected_feature = st.selectbox("Select a feature to visualize its distribution", dataset.columns)
 
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(12, 8))
 sns.kdeplot(dataset[selected_feature], shade=True, ax=ax)
 ax.set_xlabel(selected_feature)
 ax.set_ylabel("Density")
@@ -422,7 +425,7 @@ with col1:
 with col2:
     feature2 = st.selectbox("Select Feature 2", dataset.columns)
 
-fig, ax = plt.subplots(figsize=(7, 5))
+fig, ax = plt.subplots(figsize=(12, 8))
 sns.scatterplot(x=dataset[feature1], y=dataset[feature2], ax=ax)
 ax.set_xlabel(feature1)
 ax.set_ylabel(feature2)
@@ -432,7 +435,7 @@ st.pyplot(fig)
 # Correlation Heatmap
 st.header("Correlation heatmap")
 
-fig, ax = plt.subplots(figsize=(12, 6))
+fig, ax = plt.subplots(figsize=(12, 8))
 sns.heatmap(dataset.corr(), annot=True, fmt=".2f", cmap="coolwarm", cbar_kws={'shrink': 0.8}, linewidths=0.5, ax=ax)
 plt.xticks(rotation=90, ha='right')
 plt.yticks()
@@ -457,7 +460,7 @@ key_features = ['HbA1c', 'BMI', 'AGE']
 st.subheader("Distribution Comparison by Diabetes Status")
 
 # Create a single figure with 3 subplots in a row
-fig, axes = plt.subplots(1, 3, figsize=(12, 6))
+fig, axes = plt.subplots(1, 3, figsize=(12, 8))
 
 # Create boxplots for each key feature
 sns.boxplot(x='CLASS', y='HbA1c', data=dataset, ax=axes[0], palette=['lightblue', 'salmon'])
@@ -487,19 +490,18 @@ st.markdown("""
 
 # 3D scatter to visualize the three features
 st.subheader("3D Visualization of Key Features")
-fig = plt.figure(figsize=(10, 8))
+fig = plt.figure(figsize=(12, 8))
 ax = fig.add_subplot(111, projection='3d')
-colors = ['blue', 'salmon']
+
 for i, label in enumerate(['Non-Diabetic', 'Diabetic']):
     subset = dataset[dataset['CLASS'] == i]
     ax.scatter(
         subset['HbA1c'], 
         subset['BMI'], 
         subset['AGE'],
-        c=colors[i],
         label=label,
         alpha=0.6,
-        s=50
+        s=25
     )
 ax.set_xlabel('HbA1c')
 ax.set_ylabel('BMI')
@@ -509,7 +511,7 @@ ax.set_title('3D Scatter Plot of Key Diabetes Predictors')
 st.pyplot(fig)
 st.markdown("""
         **Observation**: Despite the strong imbalance in the dataset, we can observe a distinct clustering of patients with similar characteristics who don't have diabetes (represented by blue points). These non-diabetic patients generally show lower values across all three key predictors: HbA1c, BMI, and age. 
-        While there is some overlap between the two groups, particularly in the middle ranges, the separation is still visible, confirming that these three features together provide meaningful predictive power for diabetes status. The salmon-colored points (diabetic patients) tend to occupy the higher ranges of these measurements, especially for HbA1c values.
+        While there is some overlap between the two groups, particularly in the middle ranges, the separation is still visible, confirming that these three features together provide meaningful predictive power for diabetes status. The diabetic patients points tend to occupy the higher ranges of these measurements, especially for HbA1c values.
         """)
 
 
@@ -557,7 +559,7 @@ class_1 = train_df[train_df['CLASS'] == 1]
 # Display class distribution before balancing
 st.subheader("Class Distribution in Training Set")
 before_counts = y_train.value_counts()
-fig, ax = plt.subplots(figsize=(6, 4))
+fig, ax = plt.subplots(figsize=(12, 4))
 sns.barplot(x=before_counts.index, y=before_counts.values, ax=ax)
 ax.set_xticklabels(['No Diabetes (0)', 'Has Diabetes (1)'])
 ax.set_ylabel("Count")
@@ -588,14 +590,19 @@ st.subheader("Models Used for Prediction")
 
 # ======================================================================
 # Models and predictions
+# (random_state = 95 is set for reproducibility of results.)
 
-# Models dictionary
-models = {
-    "Logistic Regression": LogisticRegression(max_iter=1000, random_state=95),
-    "Decision Tree": DecisionTreeClassifier(random_state=95),
-    "K-Nearest Neighbors": KNeighborsClassifier(),
-    "Random Forest": RandomForestClassifier(random_state=95)
-}
+# imbalanced:
+log_reg =       LogisticRegression(random_state=95) 
+decision_tree = DecisionTreeClassifier(random_state=95)
+knn =           KNeighborsClassifier()
+rnd_forest =    RandomForestClassifier(random_state=95)
+
+# balanced:
+bal_log_reg =       LogisticRegression(random_state=95) 
+bal_decision_tree = DecisionTreeClassifier(random_state=95)
+bal_knn =           KNeighborsClassifier()
+bal_rnd_forest =    RandomForestClassifier(random_state=95)
 
 # Display available machine learning models
 st.markdown("""
@@ -606,62 +613,233 @@ We will use the following machine learning models:
 - **Random Forest**: An ensemble model that combines multiple decision trees for improved performance
 """)
 
+# ==== TRAINING AND TESTING ====
+
+# Training for imbalanced datasets:
+log_reg.fit(X_train, y_train)
+decision_tree.fit(X_train, y_train)
+knn.fit(X_train, y_train)
+rnd_forest.fit(X_train, y_train)
+
+# Training for BALANCED datasets:
+bal_log_reg.fit(X_train_bal, y_train_bal)
+bal_decision_tree.fit(X_train_bal, y_train_bal)
+bal_knn.fit(X_train_bal, y_train_bal)
+bal_rnd_forest.fit(X_train_bal, y_train_bal)
+
+# Testing for imbalanced datasets:
+prediction_log_reg = log_reg.predict(X_test)
+prediction_decision_tree = decision_tree.predict(X_test)
+prediction_knn = knn.predict(X_test)
+prediction_r_forest = rnd_forest.predict(X_test)
+
+# Testing for BALANCED datasets:
+prediction_balanced_log_reg = bal_log_reg.predict(X_test)
+prediction_balanced_decision_tree = bal_decision_tree.predict(X_test)
+prediction_balanced_knn = bal_knn.predict(X_test)
+prediction_balanced_r_forest = bal_rnd_forest.predict(X_test)
+
+
+
+# ==== BENCHMARK ====
+
+# Define the models
+models = ['Logistic Regression',
+          'Decision Tree',
+          'K-Nearest Neighbors',
+          'Random Forest'
+          ]
+
+# predictions for balanced datasets:
+vector_prediction_balanced =    [prediction_balanced_log_reg,
+                                 prediction_balanced_decision_tree,
+                                 prediction_balanced_knn,
+                                 prediction_balanced_r_forest
+                                ]
+
+# predictions for imbalanced datasets:
+vector_prediction_imbalanced = [prediction_log_reg,
+                                prediction_decision_tree,
+                                prediction_knn,
+                                prediction_r_forest
+                                ]
+
+
+
+# == BALANCED DATASETS ==
+# preparing empty lists to store the metrics
+balanced_accuracy =     []
+balanced_precision =    []
+balanced_f1 =           []
+balanced_recall_0 =     []
+balanced_recall_1 =     []
+
+for balanced_prediction in vector_prediction_balanced:
+    balanced_accuracy.append(accuracy_score(y_test, balanced_prediction))
+    balanced_precision.append(precision_score(y_test, balanced_prediction))
+    balanced_f1.append(f1_score(y_test, balanced_prediction))
+    balanced_recall_0.append(recall_score(y_test, balanced_prediction, pos_label=0))
+    balanced_recall_1.append(recall_score(y_test, balanced_prediction, pos_label=1))
+
+
+# Create dataframe for balanced metrics
+balanced_metrics_df = pd.DataFrame({
+    'Model':        models,
+    'Accuracy':     balanced_accuracy,
+    'Precision':    balanced_precision,
+    'F1-Score':     balanced_f1,
+    'Recall (0)':   balanced_recall_0,
+    'Recall (1)':   balanced_recall_1
+})
+
+
+
+# == imbalanced DATASETS ==
+imbalanced_accuracy =   []
+imbalanced_precision =  []
+imbalanced_f1 =         []
+imbalanced_recall_0 =   []
+imbalanced_recall_1 =   []
+
+for imbalanced_prediction in vector_prediction_imbalanced:
+    imbalanced_accuracy.append(accuracy_score(y_test, imbalanced_prediction))
+    imbalanced_precision.append(precision_score(y_test, imbalanced_prediction))
+    imbalanced_f1.append(f1_score(y_test, imbalanced_prediction))
+    imbalanced_recall_0.append(recall_score(y_test, imbalanced_prediction, pos_label=0))
+    imbalanced_recall_1.append(recall_score(y_test, imbalanced_prediction, pos_label=1))
+
+# Create dataframe for imbalanced metrics
+imbalanced_metrics_df = pd.DataFrame({
+    'Model':        models,
+    'Accuracy':     imbalanced_accuracy,
+    'Precision':    imbalanced_precision,
+    'F1-Score':     imbalanced_f1,
+    'Recall (0)':   imbalanced_recall_0,
+    'Recall (1)':   imbalanced_recall_1
+})
+
+# ==== PLOTTING BENCHMARKS ====
 
 # Benchmark all models
-st.subheader("Model Benchmarks")
-st.markdown("Comparing all models on both balanced and imbalanced datasets")
+st.subheader("Performance Metrics Comparison")
+st.markdown("Comparing model performance on balanced vs. imbalanced datasets")
+
+# Prepare data for plotting
+metrics = ['Accuracy', 'Precision', 'F1-Score', 'Recall (0)']
+plot_data = pd.melt(
+    pd.concat([imbalanced_metrics_df.assign(Dataset='imbalanced'), balanced_metrics_df.assign(Dataset='Balanced')]),
+    id_vars=['Model', 'Dataset'],
+    value_vars=metrics,
+    var_name='Metric',
+    value_name='Score'
+)
+
+
+# Display the metrics dataframes
+st.subheader("Balanced Dataset Metrics")
+st.dataframe(balanced_metrics_df.round(2))
+
+st.subheader("Imbalanced Dataset Metrics")
+st.dataframe(imbalanced_metrics_df.round(2))
 
 
 
+# plotting
+for metric in metrics:
+    metric_data = plot_data[plot_data['Metric'] == metric]
+    
+    fig, ax = plt.subplots(figsize=(12, 8))
+    
+    # Create the pointplot
+    sns.pointplot(
+        data=metric_data, 
+        x = "Dataset", 
+        y = "Score", 
+        hue = "Model", 
+        dodge = 0.2,                         # separate overlapping points over X
+    )
+    
+    # Set title and labels and room on y axis
+    ax.set_ylim(0, 1.2) # add y-axis limits
+    ax.set_title(f"{metric} Comparison")
+    ax.set_xlabel("Dataset Type")
+    ax.set_ylabel("Score")
+    ax.grid(axis='y', linestyle='--', alpha=0.7)
+    ax.yaxis.set_major_locator(plt.MultipleLocator(0.02)) # set y-axis ticks intervals
+    
+    ax.legend()
+    
+    
+    # Dynamically set y-axis limits
+    min_score = metric_data['Score'].min()
+    max_score = metric_data['Score'].max()
+    ax.set_ylim(min_score -0.05, max_score + 0.05)
+    
+    # point values
+    for line in ax.lines:
+        for i in range(len(line.get_xdata())):
+            x = line.get_xdata()[i]
+            y = line.get_ydata()[i]
+            ax.annotate( f'{y:.2f}', (x, y+0.005), color = line.get_color()) #ax.annotate(what to write, (x,y + offset) position)
+
+    st.pyplot(fig)
 
 
 
+# explanation of the metrics
+st.markdown("""
+### Metrics Interpretation
+- **Accuracy**: The proportion of correct predictions (both true positives and true negatives) among all predictions.
+- **Precision**: Of all the positive predictions, what proportion were actually positive (true positives / (true positives + false positives)).
+- **F1-Score**: The harmonic mean of precision and recall, providing a balance between the two metrics.
+- **Recall (0)**: The model's ability to correctly identify patients without diabetes (true negatives / (true negatives + false positives)).
+""")
 
-# TODO:
-# Create a dataframe to store the results of each benchmark
-# see updated notebook and use the same approach
+st.markdown("""
+### Metrics results
+Conclusions on Model Comparison (Balanced vs Imbalanced Dataset)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+From the comparison, we observe that training on a balanced dataset generally improves the model's ability to identify both classes fairly, especially the minority class in the imbalanced scenario.
+- Recall for class 0 (non-diabetic patients) significantly improves when using the balanced dataset. For example, the K-Nearest Neighbors model goes from 0.40 (imbalanced) to 0.80 (balanced), highlighting a better sensitivity to underrepresented cases.
+- On the other hand, some models slightly lose accuracy when trained on the balanced dataset. This is expected, as accuracy can be misleading in imbalanced datasets and does not reflect the model's real performance across classes.
+- Random Forest and Decision Tree remain the top-performing models in both scenarios, showing robustness to class imbalance and high performance across all metrics.
+- Logistic Regression benefits from balancing in terms of recall and F1-Score, suggesting improved generalization.
+- In general, while imbalanced training can lead to high precision and overall accuracy, it tends to bias the model toward the majority class, which is mitigated by balancing.            
+""")
 
 st.markdown("---")
+
+# User input section
+st.subheader("Make Predictions with Selected Model")
+
+
+# default dataset is the balanced one:
+balance_option = "Balanced dataset"
+
+# Create a dictionary that maps model names to model objects
+models_dict = {
+    'Logistic Regression': bal_log_reg if balance_option == "Balanced dataset" else log_reg,
+    'Decision Tree': bal_decision_tree if balance_option == "Balanced dataset" else decision_tree,
+    'K-Nearest Neighbors': bal_knn if balance_option == "Balanced dataset" else knn,
+    'Random Forest': bal_rnd_forest if balance_option == "Balanced dataset" else rnd_forest
+}
 
 
 # User selects model and balancing option
 col1, col2 = st.columns(2)
 with col1:
-    selected_model_name = st.selectbox("Select a classification model:", list(models.keys()))
-with col2:
     balance_option = st.radio("Dataset balancing:", ["Balanced dataset", "Original imbalanced dataset"])
+with col2:
+    selected_model_name = st.selectbox("Select a classification model:", options=list(models_dict.keys()))
 
-model = models[selected_model_name] # we use the model selected by the user as key in the dictionary of models
-# Train based on user selection
-# if we want to use the balanced dataset:
-if balance_option == "Balanced dataset":
-    model.fit(X_train_bal, y_train_bal)
-    st.success(f"{selected_model_name} trained on balanced dataset!")
-    training_set = "balanced"
+# Get the appropriate model from the dictionary
+model = models_dict[selected_model_name]
+training_set = "balanced" if balance_option == "Balanced dataset" else "imbalanced"
 
+# Display success message
+st.success(f"{selected_model_name} selected with {training_set} training data")
 
-
-# if we want to use the unbalanced dataset:    
-else:
-    model.fit(X_train, y_train)
-    st.success(f"{selected_model_name} trained on original imbalanced dataset!")
-    training_set = "unbalanced"
+# !update: the models in models_dict are already trained, so we don't need to train them again
 
 # Make predictions
 y_pred = model.predict(X_test)
@@ -738,23 +916,23 @@ def user_input() -> pd.DataFrame:
     # Create multiple columns for better layout
     col1, col2, col3 = st.columns(3)
     
+
     with col1:
-        input_data['Gender'] = st.selectbox('Gender', options=['Male', 'Female'])
-        input_data['AGE'] = st.slider('Age', min_value=20, max_value=90, value=50, step=1)
-        input_data['Urea'] = st.slider('Urea (mmol/L)', min_value=1.0, max_value=25.0, value=5.0, step=0.1)
+        input_data['Gender'] = st.selectbox('Gender', options=['Male', 'Female'], index=0)
+        input_data['AGE'] = st.slider('Age', min_value=20, max_value=90, value=29, step=1)
+        input_data['Urea'] = st.slider('Urea (mmol/L)', min_value=1.0, max_value=25.0, value=4.5, step=0.1)
         input_data['Cr'] = st.slider('Creatinine (μmol/L)', min_value=10.0, max_value=400.0, value=90.0, step=1.0)
     
     with col2:
-        input_data['HbA1c'] = st.slider('HbA1c (%)', min_value=3.0, max_value=15.0, value=5.7, step=0.1)
-        input_data['Chol'] = st.slider('Cholesterol (mmol/L)', min_value=2.0, max_value=10.0, value=5.0, step=0.1)
-        input_data['TG'] = st.slider('Triglycerides (mmol/L)', min_value=0.1, max_value=10.0, value=1.5, step=0.1)
-        input_data['HDL'] = st.slider('HDL (mmol/L)', min_value=0.3, max_value=5.0, value=1.2, step=0.1)
+        input_data['HbA1c'] = st.slider('HbA1c (%)', min_value=3.0, max_value=15.0, value=5.2, step=0.1)
+        input_data['Chol'] = st.slider('Cholesterol (mmol/L)', min_value=2.0, max_value=10.0, value=4.5, step=0.1)
+        input_data['TG'] = st.slider('Triglycerides (mmol/L)', min_value=0.1, max_value=10.0, value=1.0, step=0.1)
+        input_data['HDL'] = st.slider('HDL (mmol/L)', min_value=0.3, max_value=5.0, value=1.3, step=0.1)
     
     with col3:
-        input_data['LDL'] = st.slider('LDL (mmol/L)', min_value=0.5, max_value=7.0, value=3.0, step=0.1)
-        input_data['VLDL'] = st.slider('VLDL (mmol/L)', min_value=0.05, max_value=3.0, value=0.6, step=0.05)
-        input_data['BMI'] = st.slider('BMI (kg/m²)', min_value=15.0, max_value=45.0, value=25.0, step=0.1)
-    
+        input_data['LDL'] = st.slider('LDL (mmol/L)', min_value=0.5, max_value=7.0, value=2.7, step=0.1)
+        input_data['VLDL'] = st.slider('VLDL (mmol/L)', min_value=0.05, max_value=3.0, value=0.45, step=0.05)
+        input_data['BMI'] = st.slider('BMI (kg/m²)', min_value=15.0, max_value=45.0, value=22.0, step=0.1)
 
     # Convert geneder data to numerical values
     # Convert gender data to numerical values
@@ -795,9 +973,7 @@ if st.button("Predict"):
     else:
         confidence = "Not available for this model"
     
-    # Display the prediction result with class label and confidence
-    st.subheader("Prediction Result:")
-    
+
     # Create columns for better layout
     if prediction == 1:
         st.markdown("### Prediction:")
@@ -815,3 +991,110 @@ if st.button("Predict"):
         
     else:
         st.markdown(f"**Confidence: {confidence}**")    
+
+
+# Create a function to evaluate all models on user input
+def evaluate_all_models(input_data):
+    # Define all models
+    models_config = {
+        'Logistic Regression (Balanced)': bal_log_reg,
+        'Decision Tree (Balanced)': bal_decision_tree,
+        'K-Nearest Neighbors (Balanced)': bal_knn,
+        'Random Forest (Balanced)': bal_rnd_forest,
+        'Logistic Regression (Imbalanced)': log_reg,
+        'Decision Tree (Imbalanced)': decision_tree,
+        'K-Nearest Neighbors (Imbalanced)': knn,
+        'Random Forest (Imbalanced)': rnd_forest
+    }
+    
+    # Store results
+    results = []
+    
+    # Iterate through all models
+    for model_name, model in models_config.items():
+        # Make prediction
+        prediction = model.predict(input_data)[0]
+        
+        # Get confidence if available
+        if hasattr(model, "predict_proba"):
+            proba = model.predict_proba(input_data)[0]
+            confidence = proba[int(prediction)] * 100
+        else:
+            confidence = None
+            
+        # Store results
+        results.append({
+            'Model': model_name,
+            'Prediction': 'Diabetic' if prediction == 1 else 'Non-Diabetic',
+            'Confidence': confidence,
+            'Training': 'Balanced' if 'Balanced' in model_name else 'Imbalanced'
+        })
+    
+    return pd.DataFrame(results)
+
+# Button to run benchmark on all models
+st.markdown("Run benchmark on all models to compare predictions and confidence levels on the same input data.")
+if st.button("Benchmark All Models on This Input"):
+    st.subheader("Comparing All Models on User Input and Displaying Results")
+    
+    # run func to evaluate all models
+    benchmark_results = evaluate_all_models(new_data)
+    
+    # print result on the webapp
+    st.dataframe(benchmark_results)
+    
+
+    st.subheader("Prediction Confidence by Model")
+    
+    # Only include models with confidence values
+    plot_data = benchmark_results.copy()
+    
+    # Sort by training set and then confidence
+    plot_data = plot_data.sort_values(['Training', 'Confidence'], ascending=[True, False])
+    
+    # Set colors based on prediction
+    plot_data['Color'] = plot_data['Prediction'].map({
+        'Diabetic': 'red', 
+        'Non-Diabetic': 'blue'
+    })
+    
+    # Create bar chart
+    fig, ax = plt.subplots(figsize=(12, 8))
+    bars = ax.barh(plot_data['Model'], plot_data['Confidence'], color=plot_data['Color'])
+    
+    # Add confidence values to the end of each bar
+    for i, bar in enumerate(bars):
+        ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, 
+            f"{plot_data['Confidence'].iloc[i]:.1f}%",          # iloc is used to access the value in the DataFrame
+            va='center'
+        )
+
+    # Create legend
+    legend_elements = [
+        Patch(facecolor='red', label='Diabetic'),
+        Patch(facecolor='blue', label='Non-Diabetic')
+    ]
+    ax.legend(handles=legend_elements)
+    
+    # Set labels and title
+    ax.set_xlabel('Confidence (%)')
+    ax.set_title('Model Predictions with Confidence Levels')
+    ax.set_xlim(0, 105)  # Set x-axis limit to accommodate text
+    
+    # Add gridlines
+    ax.grid(axis='x', linestyle='--', alpha=0.7)
+    
+    # Show the plot
+    st.pyplot(fig)
+
+# ======================================================================
+
+# CONCLUSION
+st.title("Conclusion")
+st.markdown("""
+### Summary of Findings
+- The dataset was preprocessed to handle outliers and missing values.
+- Exploratory Data Analysis (EDA) revealed key features correlated with diabetes status.
+- Machine learning models were trained and evaluated on both balanced and imbalanced datasets.
+- A comparison of model performance metrics highlighted the importance of balancing the dataset for better predictive accuracy.
+            """)
