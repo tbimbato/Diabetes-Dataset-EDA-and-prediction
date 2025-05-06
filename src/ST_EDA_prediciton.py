@@ -314,6 +314,11 @@ st.subheader("TG and VLDL Analysis")
 fig, ax = plt.subplots(figsize=(12, 8))
 sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.3)
 ax.set_title("Scatterplot: TG vs VLDL")
+# Highlight points where VLDL > 4
+highlight = dataset['VLDL'] > 4
+ax.scatter(dataset.loc[highlight, 'TG'], dataset.loc[highlight, 'VLDL'], 
+           color='red', label='VLDL > 5', edgecolor='black')
+ax.legend()
 st.pyplot(fig)
 
 # VLDL and TG Analysis
@@ -528,7 +533,7 @@ y = dataset[target_feature]
 
 # Train-test splitting
 st.markdown("""
-### Understanding Train-Test Split
+### Train-Test Split
 Training a machine learning model requires dividing the dataset into:
 - **Training set**: Used to train the model (typically 70-80% of data)
 - **Testing set**: Used to evaluate model performance on unseen data
@@ -584,6 +589,16 @@ class_1_under = class_1.sample(n=len(class_0), random_state=95)
 train_balanced = pd.concat([class_0, class_1_under]).sample(frac=1, random_state=95).reset_index(drop=True)
 X_train_bal = train_balanced.drop(columns=['CLASS'])
 y_train_bal = train_balanced['CLASS']
+
+# Plot the effect of balancing on class distribution
+after_counts = y_train_bal.value_counts()
+fig, ax = plt.subplots(figsize=(12, 4))
+sns.barplot(x=after_counts.index, y=after_counts.values, ax=ax)
+ax.set_xticklabels(['No Diabetes (0)', 'Has Diabetes (1)'])
+ax.set_ylabel("Count")
+ax.set_title("Class Distribution After Undersampling")
+st.pyplot(fig)
+st.write(f"After balancing: Class 0 (No Diabetes): {after_counts[0]} samples, Class 1 (Has Diabetes): {after_counts[1]} samples")
 
 st.subheader("Models Used for Prediction")
 
@@ -884,16 +899,6 @@ if selected_model_name == "Random Forest":
     The bars represent how much each feature contributed to the model's decisions.
     Longer bars indicate features that have greater influence on predicting diabetes status.
     """)
-
-# Explanation of metrics
-st.markdown("""
-### Understanding the Metrics
-- **Accuracy**: Overall correctness of the model
-- **Precision**: How many of the predicted diabetic cases are actually diabetic
-- **Recall (Diabetic)**: How many actual diabetic cases the model correctly identified
-- **Recall (Non-Diabetic)**: How many actual non-diabetic cases the model correctly identified
-- **F1-Score**: Harmonic mean of precision and recall
-""")
 
 
 # Prediction on new input
