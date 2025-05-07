@@ -1081,7 +1081,12 @@ if st.button("Benchmark All Models on This Input"):
     ax.set_xlabel('Confidence (%)')
     ax.set_title('Model Predictions with Confidence Levels')
     ax.set_xlim(0, 105)  # Set x-axis limit to accommodate text
-    ax.legend(['Diabetic', 'Non-Diabetic'], title='Prediction')
+
+    legend_handles = [                              # custom legend
+        Patch(color='red', label='Diabetic'),       # red diabetic
+        Patch(color='blue', label='Non-Diabetic')   # blue non-diabetic
+    ]
+    ax.legend(handles=legend_handles, title='Prediction')
     ax.grid(axis='x', linestyle='--', alpha=0.7)        # grid
     
     st.pyplot(fig)
