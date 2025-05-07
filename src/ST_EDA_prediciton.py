@@ -19,6 +19,55 @@ from matplotlib.patches import Patch
 # to run streamlit webapp run: 'streamlit run ST_EDA_prediciton.py' in the terminal (same dir of python script)
 # ======================================================================
 
+def user_input() -> pd.DataFrame:
+    """
+    Create a form for user input of patient data.
+    Returns:
+        pd.DataFrame: DataFrame containing the user input values.
+    """
+
+    # Create a temporary dictionary to store input data:
+    input_data = {}
+    
+    st.markdown("### Enter Patient Information")
+    
+    # Create multiple columns for better layout
+    col1, col2, col3 = st.columns(3)
+    
+
+    with col1:
+        input_data['Gender'] = st.selectbox('Gender', options=['Male', 'Female'], index=0)
+        input_data['AGE'] = st.slider('Age', min_value=20, max_value=90, value=29, step=1)
+        input_data['Urea'] = st.slider('Urea (mmol/L)', min_value=1.0, max_value=25.0, value=4.5, step=0.1)
+        input_data['Cr'] = st.slider('Creatinine (μmol/L)', min_value=10.0, max_value=400.0, value=90.0, step=1.0)
+    
+    with col2:
+        input_data['HbA1c'] = st.slider('HbA1c (%)', min_value=3.0, max_value=15.0, value=5.2, step=0.1)
+        input_data['Chol'] = st.slider('Cholesterol (mmol/L)', min_value=2.0, max_value=10.0, value=4.5, step=0.1)
+        input_data['TG'] = st.slider('Triglycerides (mmol/L)', min_value=0.1, max_value=10.0, value=1.0, step=0.1)
+        input_data['HDL'] = st.slider('HDL (mmol/L)', min_value=0.3, max_value=5.0, value=1.3, step=0.1)
+    
+    with col3:
+        input_data['LDL'] = st.slider('LDL (mmol/L)', min_value=0.5, max_value=7.0, value=2.7, step=0.1)
+        input_data['VLDL'] = st.slider('VLDL (mmol/L)', min_value=0.05, max_value=3.0, value=0.45, step=0.05)
+        input_data['BMI'] = st.slider('BMI (kg/m²)', min_value=15.0, max_value=45.0, value=22.0, step=0.1)
+
+    # Convert gender data to numerical values
+    if input_data['Gender'] == 'Male':
+        input_data['Gender'] = 0
+    else:  # 'Female'
+        input_data['Gender'] = 1
+    
+    # Convert the input dictionary to a dataframe
+    input_df = pd.DataFrame([input_data])
+    
+    st.subheader("Summary of entered patient Data")
+    st.write(input_df)
+
+    # return the dataframe with all the input data
+    return input_df
+
+
 
 # Title and description
 st.title("Diabetes Dataset: data-cleaning, EDA and Prediction")
@@ -168,8 +217,7 @@ dataset.drop(columns=unused_columns, inplace=True)
 st.write(f"The following columns have been removed: {unused_columns}")
 
 # Count the occurrences of each class
-class_counts = dataset['CLASS'].value_counts() # count the number of occurrences of each class 
-
+class_counts = dataset['CLASS'].value_counts()
 # Page break
 st.markdown("---")
 
@@ -257,7 +305,7 @@ for i, (feature, lower, upper) in enumerate(zip(features_high_std, temp_limits_l
     sns.boxplot(data=dataset[feature], orient='h', ax=ax, color='lightblue')
     
     # Add threshold lines with better visibility
-    ax.axvline(x=lower, color='blue', linestyle='--', linewidth=1.5, label=f'Lower Threshold ({lower})')
+    ax.axvline(x=lower, color='blue', linestyle='--', linewidth=1.5, label=f'Lower Threshold ({lower})') # write correct threshold in the current cycle (for..)
     ax.axvline(x=upper, color='red', linestyle='--', linewidth=1.5, label=f'Upper Threshold ({upper})')
     
     # Title, labels, legend, grid
@@ -293,7 +341,6 @@ threshold_table['% Below Lower Threshold'] = (threshold_table['Below Lower Thres
 st.subheader("Threshold Analysis Table")
 st.dataframe(threshold_table)
 
-
 # Replace outliers with NaN
 st.subheader("Replacing Outliers with NaN")
 st.markdown("""
@@ -313,8 +360,6 @@ for i, feature in enumerate(features_high_std):
     dataset.loc[outlier_mask, feature] = np.nan
 
 st.markdown("---")
-
-
 
 # Scatterplot for TG vs VLDL
 st.subheader("TG and VLDL Analysis")
@@ -919,60 +964,8 @@ if selected_model_name == "Random Forest":
 st.header("Make a New Prediction")
 st.markdown("Adjust the sliders below to input values and click 'Predict' to get a diabetes prediction.")
 
-# Define a function to create the input form
-def user_input() -> pd.DataFrame:
-    """
-    Create a form for user input of patient data.
-    Returns:
-        pd.DataFrame: DataFrame containing the user input values.
-    """
 
-    # Create a temporary dictionary to store input data:
-    input_data = {}
-    
-    st.markdown("### Enter Patient Information")
-    
-    # Create multiple columns for better layout
-    col1, col2, col3 = st.columns(3)
-    
-
-    with col1:
-        input_data['Gender'] = st.selectbox('Gender', options=['Male', 'Female'], index=0)
-        input_data['AGE'] = st.slider('Age', min_value=20, max_value=90, value=29, step=1)
-        input_data['Urea'] = st.slider('Urea (mmol/L)', min_value=1.0, max_value=25.0, value=4.5, step=0.1)
-        input_data['Cr'] = st.slider('Creatinine (μmol/L)', min_value=10.0, max_value=400.0, value=90.0, step=1.0)
-    
-    with col2:
-        input_data['HbA1c'] = st.slider('HbA1c (%)', min_value=3.0, max_value=15.0, value=5.2, step=0.1)
-        input_data['Chol'] = st.slider('Cholesterol (mmol/L)', min_value=2.0, max_value=10.0, value=4.5, step=0.1)
-        input_data['TG'] = st.slider('Triglycerides (mmol/L)', min_value=0.1, max_value=10.0, value=1.0, step=0.1)
-        input_data['HDL'] = st.slider('HDL (mmol/L)', min_value=0.3, max_value=5.0, value=1.3, step=0.1)
-    
-    with col3:
-        input_data['LDL'] = st.slider('LDL (mmol/L)', min_value=0.5, max_value=7.0, value=2.7, step=0.1)
-        input_data['VLDL'] = st.slider('VLDL (mmol/L)', min_value=0.05, max_value=3.0, value=0.45, step=0.05)
-        input_data['BMI'] = st.slider('BMI (kg/m²)', min_value=15.0, max_value=45.0, value=22.0, step=0.1)
-
-    # Convert geneder data to numerical values
-    # Convert gender data to numerical values
-    if input_data['Gender'] == 'Male':
-        input_data['Gender'] = 0
-    else:  # 'Female'
-        input_data['Gender'] = 1
-    
-    # Convert the input dictionary to a dataframe
-    input_df = pd.DataFrame([input_data])
-    
-    # Show the entered data
-    st.subheader("Summary of entered patient Data")
-    st.write(input_df)
-
-    # return the dataframe with all the input data
-    return input_df
-
-
-
-# Execute the function to create the input form
+# Execute user_input() to create the input form
 new_data = user_input() # calling the function to create the input form
 
 # Add prediction button
@@ -1004,15 +997,14 @@ if st.button("Predict"):
     if isinstance(confidence, float):
         st.markdown("### Confidence Level:")
         
-        # Show confidence as percentage with progress bar
-        st.progress(confidence/100)
-        st.markdown(f"**{confidence:.1f}%** confidence in this prediction")
+        st.progress(confidence/100) #confidence as a st progress line
+        st.markdown(f"**{confidence:.1f}%** confidence in this prediction") # <**> for bold MD type inside f-string
         
     else:
         st.markdown(f"**Confidence: {confidence}**")    
 
 
-# Create a function to evaluate all models on user input
+# Create a function to evaluate all models on user input (this function is not generic!)
 def evaluate_all_models(input_data):
     # Define all models
     models_config = {
@@ -1061,11 +1053,10 @@ if st.button("Benchmark All Models on This Input"):
     
     # print result on the webapp
     st.dataframe(benchmark_results)
-    
 
     st.subheader("Prediction Confidence by Model")
     
-    # backup the results for plotting (every model has a confidence value so no need to filter)
+    # backup the results for plotting (every model has a confidence value so no need to filter wether we are capable to run the 'predict_proba' method)
     plot_data = benchmark_results.copy()
     
     # Sort by training set and then confidence
@@ -1087,19 +1078,12 @@ if st.button("Benchmark All Models on This Input"):
             f"{plot_data['Confidence'].iloc[i]:.1f}%",          # iloc is used to access the value in the DataFrame
             va='center'
         )
-
-    # Add a simple legend for prediction colors
-    ax.legend(['Diabetic', 'Non-Diabetic'], title='Prediction')
-    
-    # Set labels and title
     ax.set_xlabel('Confidence (%)')
     ax.set_title('Model Predictions with Confidence Levels')
     ax.set_xlim(0, 105)  # Set x-axis limit to accommodate text
+    ax.legend(['Diabetic', 'Non-Diabetic'], title='Prediction')
+    ax.grid(axis='x', linestyle='--', alpha=0.7)        # grid
     
-    # Add gridlines
-    ax.grid(axis='x', linestyle='--', alpha=0.7)
-    
-    # Show the plot
     st.pyplot(fig)
 
 # ======================================================================
