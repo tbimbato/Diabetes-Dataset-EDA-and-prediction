@@ -16,7 +16,7 @@ import seaborn as sns
 from matplotlib.patches import Patch
 
 # ======================================================================
-# to run streamlit webapp run 'streamlit run ST_EDA_prediciton.py' in the terminal (same dir of python script)
+# to run streamlit webapp run: 'streamlit run ST_EDA_prediciton.py' in the terminal (same dir of python script)
 # ======================================================================
 
 
@@ -105,7 +105,8 @@ st.write("Rows with null values have been removed.")
 # Conversion to numerical values
 st.subheader("Conversion to Numerical Values")
 st.markdown("""
-In this section, we normalize and encode categorical columns to numerical values for further analysis and modeling.
+In this section, we normalize and encode categorical columns to numerical 
+            values for further analysis and modeling.
 """)
 
 # Repairing inconsistent values and encoding of the 'Gender' column
@@ -153,7 +154,9 @@ st.markdown("---")
 # Unused columns
 st.subheader("Removing Unused Columns")
 st.markdown("""
-Some columns are not relevant to predict diabetes. For example, columns like `ID` and `No_Pation` do not provide meaningful information for prediction and can be removed.
+Some columns are not relevant to predict diabetes. For example,
+            columns like `ID` and `No_Pation` do not provide
+            meaningful information for prediction and can be removed.
 """)
 
 # Backup of the cleaned and encoded dataset
@@ -190,7 +193,9 @@ st.subheader("Outlier Detection Analysis")
 st.markdown("""
 #### Features Requiring Special Attention
 
-As shown in the preliminary analysis, the features **'Urea', 'Cr', 'TG', 'HDL',** and **'VLDL'** show high values of standard deviation ($\\sigma$). Specifically, these columns have standard deviation values higher than half their respective means:
+As shown in the preliminary analysis, the features **'Urea', 'Cr', 'TG', 
+            'HDL',** and **'VLDL'** show high values of standard deviation ($\\sigma$).
+            Specifically, these columns have standard deviation values higher than half their respective means:
 
 $$\\text{Attention required when:}\\quad \\sigma > \\frac{\\text{mean}}{2}$$
 
@@ -292,7 +297,9 @@ st.dataframe(threshold_table)
 # Replace outliers with NaN
 st.subheader("Replacing Outliers with NaN")
 st.markdown("""
-Outliers detected in the dataset are replaced with NaN values. This approach allows us to handle extreme values without immediately removing them, preserving the dataset's integrity for further analysis. If the proportion of NaN values becomes significant, additional measures will be considered.
+Outliers detected in the dataset are replaced with NaN values. 
+            This approach allows us to handle extreme values without immediately removing them, preserving the dataset's integrity for further analysis. 
+            If the proportion of NaN values becomes significant, additional measures will be considered.
 """)
 
 # Handle outliers for features with high standard deviation
@@ -324,7 +331,8 @@ st.pyplot(fig)
 # VLDL and TG Analysis
 st.markdown("### VLDL and TG")
 st.markdown("""
-Since VLDL is a value typically synthetic, we investigate its distribution in relation to TG. The scatter plot below highlights their relationship, showing a positive correlation between the two variables.
+Since VLDL is a value typically synthetic, we investigate its distribution in relation to TG. 
+            The scatter plot below highlights their relationship, showing a positive correlation between the two variables.
 
 VLDL can also be measured directly in some cases, thus the relation with the TG value can be non-linear in some cases.
 
@@ -394,7 +402,8 @@ with col2:
     ax.set_xlabel("Diabetes Status")
     ax.set_ylabel("Count")
     st.pyplot(fig)
-    st.write("The population is imbalanced, with the majority of patients having diabetes. This imbalance should be taken into account when making predictions about the likelihood of diabetes in patients.")
+    st.write("The population is imbalanced, with the majority of patients having diabetes. " \
+    "This imbalance should be taken into account when making predictions about the likelihood of diabetes in patients.")
 
 with col3:
     st.subheader("Age Distribution (KDE)")
@@ -403,7 +412,8 @@ with col3:
     ax.set_xlabel("Age")
     ax.set_ylabel("Density")
     st.pyplot(fig)
-    st.write("The population's age distribution KDE plot shows a peak in the range of 50-60, and it is approximately bell-shaped, indicating a normal-like distribution.")
+    st.write("The population's age distribution KDE plot shows a peak in the range of 50-60, "
+    "and it is approximately bell-shaped, indicating a normal-like distribution.")
 
 st.markdown("---")
 
@@ -515,8 +525,12 @@ ax.legend()
 ax.set_title('3D Scatter Plot of Key Diabetes Predictors')
 st.pyplot(fig)
 st.markdown("""
-        **Observation**: Despite the strong imbalance in the dataset, we can observe a distinct clustering of patients with similar characteristics who don't have diabetes (represented by blue points). These non-diabetic patients generally show lower values across all three key predictors: HbA1c, BMI, and age. 
-        While there is some overlap between the two groups, particularly in the middle ranges, the separation is still visible, confirming that these three features together provide meaningful predictive power for diabetes status. The diabetic patients points tend to occupy the higher ranges of these measurements, especially for HbA1c values.
+        **Observation**: Despite the strong imbalance in the dataset, we can observe a distinct clustering of 
+            patients with similar characteristics who don't have diabetes (represented by blue points). T
+            hese non-diabetic patients generally show lower values across all three key predictors: HbA1c, BMI, and age. 
+            While there is some overlap between the two groups, particularly in the middle ranges, the separation 
+            is still visible, confirming that these three features together provide meaningful predictive power for diabetes status. 
+            The diabetic patients points tend to occupy the higher ranges of these measurements, especially for HbA1c values.
         """)
 
 
@@ -1051,7 +1065,7 @@ if st.button("Benchmark All Models on This Input"):
 
     st.subheader("Prediction Confidence by Model")
     
-    # Only include models with confidence values
+    # backup the results for plotting (every model has a confidence value so no need to filter)
     plot_data = benchmark_results.copy()
     
     # Sort by training set and then confidence
@@ -1069,17 +1083,13 @@ if st.button("Benchmark All Models on This Input"):
     
     # Add confidence values to the end of each bar
     for i, bar in enumerate(bars):
-        ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, 
+        ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, # positioning
             f"{plot_data['Confidence'].iloc[i]:.1f}%",          # iloc is used to access the value in the DataFrame
             va='center'
         )
 
-    # Create legend
-    legend_elements = [
-        Patch(facecolor='red', label='Diabetic'),
-        Patch(facecolor='blue', label='Non-Diabetic')
-    ]
-    ax.legend(handles=legend_elements)
+    # Add a simple legend for prediction colors
+    ax.legend(['Diabetic', 'Non-Diabetic'], title='Prediction')
     
     # Set labels and title
     ax.set_xlabel('Confidence (%)')

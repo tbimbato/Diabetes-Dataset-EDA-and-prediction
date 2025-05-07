@@ -32,7 +32,6 @@ Source: [Kaggle - Diabetes unclean dataset](https://www.kaggle.com/datasets/kabi
 - `data/`: Contains the raw dataset (`diabetes_unclean.csv`) and any processed datasets.  
 - `notebooks/`: Jupyter notebooks for data cleaning, EDA, and modeling.  
 - `src/`: Python scripts for data processing and model development.  
-- `results/`: Outputs, visualizations, and model evaluation results.
 - `abstract/`: LaTex abstract of the project 
 
 

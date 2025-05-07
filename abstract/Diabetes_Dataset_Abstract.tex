@@ -8,23 +8,69 @@
 
 \maketitle
 
-\section*{Abstract}
-
-This project focuses on exploratory data analysis (EDA) and predictive modeling for identifying potential diabetes in patients. 
-
-The study is conducted as part of the course "Programming and Database - Data Science" at the University of Verona (UNIVR) for the academic year 2024/2025.
 
 
-The dataset used for this project is \texttt{diabetes\_unclean.csv}, which contains raw health data from various patients. 
-The project involves data cleaning, exploratory data analysis, and predictive modeling to estimate the likelihood of diabetes in patients. 
-The sources of the information can be found in the `readme.md` file in the repository.\\
 
-The repository is structured as follows: \begin{itemize}
-\item\texttt{data/}: Contains the raw dataset (`diabetes\_unclean.csv`) and any processed datasets.
-\item\texttt{notebooks/}: Jupyter notebooks for data cleaning, EDA, and modeling.
-\item\texttt{src/}: Python scripts for data processing and model development.
-\item\texttt{results/}: Outputs, visualizations, and model evaluation results.
+
+
+\section{Introduction}
+
+This document provides an overview of a project aimed at performing exploratory data analysis (EDA) and predictive modeling for diabetes detection. The project is part of the "Programming and Database - Data Science" course at the University of Verona (UNIVR), Academic Year 2024/2025.
+
+
+It is important to note that this project is purely educational and should not be considered as having any medical or scientific validity. While it demonstrates the application of data science techniques in healthcare contexts, the results are intended solely for academic purposes and must not be used for professional diagnosis or treatment.
+
+
+
+\section{Project Overview}
+
+The dataset used, \texttt{diabetes\_unclean.csv}, contains raw health data from various patients. The primary objectives are to clean this dataset, perform EDA, and develop predictive models to estimate diabetes likelihood in patients.
+
+\subsection{Data Cleaning and Exploration}
+
+The initial phase involves cleaning the dataset to handle missing values, outliers, and encoding categorical variables. This step ensures that the data is suitable for analysis and modeling.
+
+\begin{itemize}
+    \item \textbf{Missing Values:} Rows with significant null values are removed.
+    \item \textbf{Outliers:} Statistical thresholds based on physiological limits are applied to identify outliers, which are then handled appropriately.
+    \item \textbf{Encoding:} Categorical variables such as gender and diabetes status are encoded into numerical values for modeling.
 \end{itemize}
-This project is purely educational and part of the coursework for the \textbf{Programming and Database} course. It should not be considered for scientific or professional use.
+
+EDA is conducted using Jupyter notebooks. Key statistical summaries and visualizations (e.g., histograms, box plots) help identify patterns and correlations in the data.
+
+\section{Predictive Modeling}
+
+The next phase involves developing predictive models to estimate the likelihood of diabetes. The following models are used:
+
+\begin{itemize}
+    \item Logistic Regression
+    \item Decision Tree Classifier
+    \item K-Nearest Neighbors (KNN)
+    \item Random Forest Classifier
+\end{itemize}
+
+Each model is trained and tested using a train-test split approach, with special attention to handling class imbalance through random undersampling.
+
+\section{Integration and Web Application Development}
+
+The final phase involves integrating the models into a web application using Streamlit. This allows users to input patient data and receive real-time predictions on diabetes likelihood.
+
+\subsection{Streamlit Web App Features}
+
+\begin{itemize}
+    \item Readable interface showcasing data-cleaning, EDA, model selection and dataset balancing options.
+    \item Real-time prediction from user input.
+    \item Benchmarking feature to compare predictions across all models using the same user input data.
+\end{itemize}
+
+\section{Structure of the Repository}
+
+\begin{itemize}
+    \item \texttt{data/}: Contains raw and processed datasets.
+    \item \texttt{notebooks/}: Jupyter notebooks for data cleaning, EDA, and modeling.
+    \item \texttt{src/}: Python scripts for model integration and web app development.
+\end{itemize}
+
+This document serves as a brief overview of the project's methodology and outcomes. For more detailed insights, refer to the Jupyter notebooks and code files in the repository.
 
 \end{document}
