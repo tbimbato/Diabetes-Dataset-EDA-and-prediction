@@ -586,9 +586,8 @@ st.markdown("""---""")
 st.header("Model Selection and Training")
 
 # Define target and features
-target_feature = 'CLASS'
-X = dataset.drop(columns=[target_feature])
-y = dataset[target_feature]
+X = dataset.drop(columns=['CLASS'])
+y = dataset['CLASS']
 
 # Train-test splitting
 st.markdown("""
@@ -717,7 +716,7 @@ prediction_balanced_r_forest = bal_rnd_forest.predict(X_test)
 
 # ==== BENCHMARK ====
 
-# Define the models
+# Define the models' list
 models = ['Logistic Regression',
           'Decision Tree',
           'K-Nearest Neighbors',
@@ -800,7 +799,9 @@ st.markdown("Comparing model performance on balanced vs. imbalanced datasets")
 
 # Prepare data for plotting
 metrics = ['Accuracy', 'Precision', 'F1-Score', 'Recall (0)']
-plot_data = pd.melt(
+
+# ! pd.melt() remark: melt more columns into rows 
+plot_data = pd.melt( 
     pd.concat([imbalanced_metrics_df.assign(Dataset='imbalanced'), balanced_metrics_df.assign(Dataset='Balanced')]),
     id_vars=['Model', 'Dataset'],
     value_vars=metrics,
@@ -890,7 +891,14 @@ st.subheader("Make Predictions with Selected Model")
 # default dataset is the balanced one:
 balance_option = "Balanced dataset"
 
-# Create a dictionary that maps model names to model objects
+# User selects model and balancing option
+col1, col2 = st.columns(2)
+with col1:
+    balance_option = st.radio("Dataset balancing:", ["Balanced dataset", "Original imbalanced dataset"])
+with col2:
+    selected_model_name = st.selectbox("Select a classification model:", options=["Logistic Regression", "Decision Tree", "K-Nearest Neighbors", "Random Forest"])
+
+# Recreate the dictionary based on the updated balance_option
 models_dict = {
     'Logistic Regression': bal_log_reg if balance_option == "Balanced dataset" else log_reg,
     'Decision Tree': bal_decision_tree if balance_option == "Balanced dataset" else decision_tree,
@@ -899,18 +907,10 @@ models_dict = {
 }
 
 
-# User selects model and balancing option
-col1, col2 = st.columns(2)
-with col1:
-    balance_option = st.radio("Dataset balancing:", ["Balanced dataset", "Original imbalanced dataset"])
-with col2:
-    selected_model_name = st.selectbox("Select a classification model:", options=list(models_dict.keys()))
-
-# Get the appropriate model from the dictionary
 model = models_dict[selected_model_name]
+
 training_set = "balanced" if balance_option == "Balanced dataset" else "imbalanced"
 
-# Display success message
 st.success(f"{selected_model_name} selected with {training_set} training data")
 
 # !update: the models in models_dict are already trained, so we don't need to train them again
@@ -1056,26 +1056,19 @@ if st.button("Benchmark All Models on This Input"):
 
     st.subheader("Prediction Confidence by Model")
     
-    # backup the results for plotting (every model has a confidence value so no need to filter wether we are capable to run the 'predict_proba' method)
-    plot_data = benchmark_results.copy()
-    
-    # Sort by training set and then confidence
-    plot_data = plot_data.sort_values(['Training', 'Confidence'], ascending=[True, False])
-    
-    # Set colors based on prediction
-    plot_data['Color'] = plot_data['Prediction'].map({
+    benchmark_results['Color'] = benchmark_results['Prediction'].map({
         'Diabetic': 'red', 
         'Non-Diabetic': 'blue'
     })
     
     # Create bar chart
     fig, ax = plt.subplots(figsize=(12, 8))
-    bars = ax.barh(plot_data['Model'], plot_data['Confidence'], color=plot_data['Color'])
+    bars = ax.barh(benchmark_results['Model'], benchmark_results['Confidence'], color=benchmark_results['Color'])
     
     # Add confidence values to the end of each bar
     for i, bar in enumerate(bars):
         ax.text(bar.get_width() + 1, bar.get_y() + bar.get_height()/2, # positioning
-            f"{plot_data['Confidence'].iloc[i]:.1f}%",          # iloc is used to access the value in the DataFrame
+            f"{benchmark_results['Confidence'].iloc[i]:.1f}%",          # iloc is used to access the value in the DataFrame
             va='center'
         )
     ax.set_xlabel('Confidence (%)')
