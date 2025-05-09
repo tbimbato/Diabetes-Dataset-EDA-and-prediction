@@ -361,19 +361,9 @@ for i, feature in enumerate(features_high_std):
 
 st.markdown("---")
 
-# Scatterplot for TG vs VLDL
-st.subheader("TG and VLDL Analysis")
-fig, ax = plt.subplots(figsize=(12, 8))
-sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.3)
-ax.set_title("Scatterplot: TG vs VLDL")
-# Highlight points where VLDL > 4
-highlight = dataset['VLDL'] > 4
-ax.scatter(dataset.loc[highlight, 'TG'], dataset.loc[highlight, 'VLDL'], 
-           color='red', label='VLDL > 5', edgecolor='black')
-ax.legend()
-st.pyplot(fig)
+# ======================================================================
+# --- VLDL and TG Analysis Section ---
 
-# VLDL and TG Analysis
 st.markdown("### VLDL and TG")
 st.markdown("""
 Since VLDL is a value typically synthetic, we investigate its distribution in relation to TG. 
@@ -381,32 +371,95 @@ Since VLDL is a value typically synthetic, we investigate its distribution in re
 
 VLDL can also be measured directly in some cases, thus the relation with the TG value can be non-linear in some cases.
 
-Formulas for computing VLDL starting from TG:
-            
+**Formulas for computing VLDL starting from TG:**
+
 $$VLDL = \\frac{\\text{TG}}{5} \\quad \\text{(mg/dL)}$$ 
-            
 $$VLDL = \\frac{\\text{TG}}{2.2} \\quad \\text{(mmol/L)}$$
 
 #### Conversion rate between different units of measurement:
-##### (TG): 
+- **(TG):**
 $$\\text{mmol/L} = \\frac{\\text{mg/dL}}{88.5}$$
 $$\\text{mg/dL} = \\text{mmol/L} \\times 88.5$$
 
-##### Cholesterol (LDL, HDL, VLDL, Total): 
+- **Cholesterol (LDL, HDL, VLDL, Total):**
 $$\\text{mmol/L} = \\frac{\\text{mg/dL}}{38.67}$$
 $$\\text{mg/dL} = \\text{mmol/L} \\times 38.67$$
 """)
 
-# Convert VLDL values greater than 4
-# see notebook for reference
+# Scatter plot for TG vs VLDL with color based on threshold
+st.subheader("Scatter Plot: TG vs VLDL")
+fig, ax = plt.subplots(figsize=(12, 8))
+
+# Color points based on VLDL threshold
+sns.scatterplot(
+    data=dataset, x='TG', y='VLDL', ax=ax,
+    hue=dataset['VLDL'] > 4, palette={True: 'red', False: 'blue'}, legend=False,
+    alpha=0.5
+)
+ax.axhline(y=4, color='red', linestyle='--', label='VLDL = 4 threshold')
+ax.set_title('Scatter Plot: TG vs VLDL')
+ax.set_xlabel('TG (mmol/L)')
+ax.set_ylabel('VLDL (mmol/L)')
+ax.legend()
+st.pyplot(fig)
+
+st.markdown("""
+There are two groups of VLDL values, as seen in the graph above:
+- One group consists of values less than 4, following a pseudo-linear distribution composed of synthetic values derived from the standard formula ($VLDL = TG / 2.2$) with the unit of measurement: mmol/L.
+- The other group exhibits an apparently incorrect trend. Further analysis has demonstrated that the second group represents measurements in a different unit of measurement (mg/dL).
+""")
+
+# Scatter plot for TG vs VLDL with VLDL < 4
+filtered_dataset = dataset[dataset['VLDL'] < 4]
+fig, ax = plt.subplots(figsize=(12, 8))
+sns.scatterplot(data=filtered_dataset, x='TG', y='VLDL', alpha=0.5, ax=ax)
+x_vals = np.linspace(filtered_dataset['TG'].min(), filtered_dataset['TG'].max(), 100)
+y_vals = x_vals / 2.2
+ax.plot(x_vals, y_vals, color='red', label='VLDL = TG / 2.2')
+ax.set_title('Scatter Plot: TG vs VLDL (VLDL < 4)')
+ax.set_xlabel('TG (mmol/L)')
+ax.set_ylabel('VLDL (mmol/L)')
+ax.legend()
+st.pyplot(fig)
+
+# Scatter plot for TG vs VLDL with VLDL >= 4
+filtered_dataset = dataset[dataset['VLDL'] >= 4]
+fig, ax = plt.subplots(figsize=(12, 8))
+sns.scatterplot(data=filtered_dataset, x='TG', y='VLDL', alpha=0.5, ax=ax)
+x_vals = np.linspace(filtered_dataset['TG'].min(), filtered_dataset['TG'].max(), 100)
+# The trend for VLDL >= 4 is not matching the mmol/L formula, indicating a different unit
+ax.set_title('Scatter Plot: TG vs VLDL (VLDL >= 4)')
+ax.set_xlabel('TG (mmol/L)')
+ax.set_ylabel('VLDL (mmol/L)')
+st.pyplot(fig)
+
+st.markdown("""
+To homogenize the data, it is necessary to convert the VLDL measurements above 4 (likely in mg/dL) back to mmol/L using the following formula:
+
+$$VLDL_{mmol/L} = \\frac{VLDL_{mg/dL} \\times 5.5}{38.67 \\times 2.2}$$
+
+This brings all VLDL values to the same unit and makes them comparable.
+""")
+
+# Convert VLDL values greater than 4 using the new formula
 dataset.loc[dataset['VLDL'] > 4, 'VLDL'] = (dataset['VLDL'] * 5.5 / 38.67) / 2.2
 
-# Scatterplot after conversion
-st.subheader("Scatterplot After VLDL Conversion")
+# Scatter plot for TG vs VLDL after conversion
+st.subheader("Scatter Plot: TG vs VLDL (After Conversion)")
 fig, ax = plt.subplots(figsize=(12, 8))
-sns.scatterplot(data=dataset, x='TG', y='VLDL', ax=ax, alpha=0.5)
-ax.set_title("Scatterplot: TG vs VLDL (After Conversion)")
+sns.scatterplot(data=dataset, x='TG', y='VLDL', alpha=0.5, ax=ax)
+x_vals = np.linspace(dataset['TG'].min(), dataset['TG'].max(), 100)
+y_vals = x_vals / 2.2
+ax.plot(x_vals, y_vals, color='red', label='VLDL = TG / 2.2')
+ax.set_title('Scatter Plot: TG vs VLDL (After Conversion)')
+ax.set_xlabel('TG (mmol/L)')
+ax.set_ylabel('VLDL (mmol/L)')
+ax.legend()
 st.pyplot(fig)
+
+st.markdown("""
+After conversion, all VLDL values align with the expected synthetic relationship $VLDL = TG / 2.2$ (in mmol/L), confirming the correction and homogenization of the data.
+""")
 
 # Handle missing values
 st.subheader("Handling Missing Values")
@@ -1080,7 +1133,6 @@ if st.button("Benchmark All Models on This Input"):
         Patch(color='blue', label='Non-Diabetic')   # blue non-diabetic
     ]
     ax.legend(handles=legend_handles, title='Prediction')
-    ax.grid(axis='x', linestyle='--', alpha=0.7)        # grid
     
     st.pyplot(fig)
 
