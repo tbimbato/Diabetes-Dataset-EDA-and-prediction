@@ -483,7 +483,7 @@ col1, col2, col3 = st.columns(3)
 with col1:
     st.subheader("Gender Distribution:")
     gender_counts = dataset['Gender'].value_counts()
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(4,4))
     sns.barplot(x=gender_counts.index, y=gender_counts.values, ax=ax)
     ax.set_xticklabels(['Male', 'Female'])
     ax.set_xlabel("Gender")
@@ -494,7 +494,7 @@ with col1:
 with col2:
     st.subheader("Patients with Diabetes:")
     class_counts = dataset['CLASS'].value_counts()
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(4,4))
     sns.barplot(x=class_counts.index, y=class_counts.values, ax=ax)
     ax.set_xticklabels(['No Diabetes (0)', 'Has Diabetes (1)'])
     ax.set_xlabel("Diabetes Status")
@@ -505,7 +505,7 @@ with col2:
 
 with col3:
     st.subheader("Age Distribution (KDE)")
-    fig, ax = plt.subplots(figsize=(6, 6))
+    fig, ax = plt.subplots(figsize=(4,4))
     sns.kdeplot(dataset['AGE'], shade=True, ax=ax)
     ax.set_xlabel("Age")
     ax.set_ylabel("Density")
