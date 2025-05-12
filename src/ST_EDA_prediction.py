@@ -19,6 +19,7 @@ from matplotlib.patches import Patch
 # to run streamlit webapp run: 'streamlit run ST_EDA_prediciton.py' in the terminal (same dir of python script)
 # ======================================================================
 
+# Defining a function to create a row of data based on user input via webapp ---
 def user_input() -> pd.DataFrame:
     """
     Create a form for user input of patient data.
@@ -28,13 +29,10 @@ def user_input() -> pd.DataFrame:
 
     # Create a temporary dictionary to store input data:
     input_data = {}
-    
     st.markdown("### Enter Patient Information")
-    
-    # Create multiple columns for better layout
+
     col1, col2, col3 = st.columns(3)
     
-
     with col1:
         input_data['Gender'] = st.selectbox('Gender', options=['Male', 'Female'], index=0)
         input_data['AGE'] = st.slider('Age', min_value=20, max_value=90, value=29, step=1)
@@ -58,18 +56,16 @@ def user_input() -> pd.DataFrame:
     else:  # 'Female'
         input_data['Gender'] = 1
     
-    # Convert the input dictionary to a dataframe
-    input_df = pd.DataFrame([input_data])
     
+    input_df = pd.DataFrame([input_data])
     st.subheader("Summary of entered patient Data")
     st.write(input_df)
 
-    # return the dataframe with all the input data
     return input_df
 
 
-
-# Title and description
+# ======================================================================
+# Title and description ---
 st.title("Diabetes Dataset: data-cleaning, EDA and Prediction")
 st.markdown("""
 This application showcase the cleaning methods and helps in performing an **Exploratory Data Analysis (EDA)** on the Diabetes dataset and 
@@ -77,7 +73,7 @@ provides predictions using various machine learning models.
 """)
 
 
-# Dataset Features Description
+# Dataset Features Description ---
 st.markdown("""
 ## Dataset features
 In the dataset we can access the following feature:
@@ -106,8 +102,13 @@ st.write("Shape of the dataset:", dataset.shape)
 st.write("Summary statistics:")
 st.write(dataset.describe())
 
+
 st.markdown("---")
-# Data Cleaning Section
+
+
+
+# Data cleaning ---
+
 st.header("Data Cleaning")
 st.markdown(
 """
@@ -131,13 +132,11 @@ st.subheader("Null values")
 st.write("Checking for null values in the dataset:")
 col1, col2 = st.columns(2) # 2 columns layout
 
-# column 1:
 with col1: 
     st.caption("Null Values Count")
     null_values = dataset.isnull().sum()
     st.write(null_values[null_values > 0])
 
-# column 2:
 with col2:
     st.caption("Rows with Null Values")
     total_rows = dataset.shape[0]
@@ -151,14 +150,15 @@ st.write(f"The rows with null values constitute only {percentage_with_nan:.2f}% 
 dataset = dataset.dropna()
 st.write("Rows with null values have been removed.")
 
-# Conversion to numerical values
+# Conversion to numerical values ----
 st.subheader("Conversion to Numerical Values")
 st.markdown("""
 In this section, we normalize and encode categorical columns to numerical 
             values for further analysis and modeling.
 """)
 
-# Repairing inconsistent values and encoding of the 'Gender' column
+
+# Conversion and encoding 'Gender' ---
 st.subheader("Encoding 'Gender' Column")
 col1, col2 = st.columns(2)
 
@@ -177,7 +177,7 @@ st.markdown("""
 - 1 = Female
 """)
 
-# Encoding of the 'CLASS' column
+# Conversion and encoding 'CLASS' ---
 st.subheader("Encoding 'CLASS' Column")
 col1, col2 = st.columns(2)
 
@@ -196,11 +196,10 @@ st.markdown("""
 - 1 = Positive (Has Diabetes)
 """)
 
-# Page break
 st.markdown("---")
 
 
-# Unused columns
+# Unused columns ---
 st.subheader("Removing Unused Columns")
 st.markdown("""
 Some columns are not relevant to predict diabetes. For example,
@@ -208,25 +207,18 @@ Some columns are not relevant to predict diabetes. For example,
             meaningful information for prediction and can be removed.
 """)
 
-# Backup of the cleaned and encoded dataset
 ds_backup = dataset.copy()
-
-# Removing unused columns
 unused_columns = ['ID', 'No_Pation']
 dataset.drop(columns=unused_columns, inplace=True)
 st.write(f"The following columns have been removed: {unused_columns}")
 
-# Count the occurrences of each class
-class_counts = dataset['CLASS'].value_counts()
-# Page break
+
 st.markdown("---")
 
 
 
 # Outlier Detection and Handling Section
 st.header("Outlier Detection and Handling")
-
-# Statistical Summary
 st.subheader("Statistical Summary of Features")
 columns_to_drop = ['Gender', 'AGE']
 stats = dataset.drop(columns=columns_to_drop).describe() # computing stats excluding 'Gender' and 'AGE'
@@ -271,7 +263,8 @@ Sources: https://www.scymed.com, https://www.my-personaltrainer.it/salute/conver
 features_high_std = stats.columns[stats.loc['std'] > (stats.loc['mean'] / 2)].tolist()
 st.write("Features with high standard deviation:", features_high_std)
 
-# Physiological limits for outlier detection
+
+# Feature limits vectors
 st.subheader("Physiological limits vectors")
 
 # LIMITS DEFINED -- SEE LINK TO REFERENCE
@@ -308,7 +301,7 @@ for i, (feature, lower, upper) in enumerate(zip(features_high_std, temp_limits_l
     ax.axvline(x=lower, color='blue', linestyle='--', linewidth=1.5, label=f'Lower Threshold ({lower})') # write correct threshold in the current cycle (for..)
     ax.axvline(x=upper, color='red', linestyle='--', linewidth=1.5, label=f'Upper Threshold ({upper})')
     
-    # Title, labels, legend, grid
+    # Title, labels, legend, grid ...
     ax.set_title(f'Distribution of {feature}', fontsize=12)
     ax.set_xlabel(f'{feature} Value', fontsize=10)
     ax.legend(loc='upper right', framealpha=0.9)
@@ -336,8 +329,6 @@ threshold_table = pd.DataFrame({
 # Storing the percentage of outliers
 threshold_table['% Above Upper Threshold'] = (threshold_table['Above Upper Threshold'] / len(dataset)) * 100
 threshold_table['% Below Lower Threshold'] = (threshold_table['Below Lower Threshold'] / len(dataset)) * 100
-
-# Display the table
 st.subheader("Threshold Analysis Table")
 st.dataframe(threshold_table)
 
@@ -349,8 +340,8 @@ Outliers detected in the dataset are replaced with NaN values.
             If the proportion of NaN values becomes significant, additional measures will be considered.
 """)
 
-# Handle outliers for features with high standard deviation
-for i, feature in enumerate(features_high_std):
+# cycling on an index 'i' and on the feature with high std
+for i, feature in enumerate(features_high_std): # enumerate gives the index 'i' !and the feature name!
     lower_limit = temp_limits_lower[i]
     upper_limit = temp_limits_upper[i]
     # Create a mask for outliers where values are outside the defined limits
@@ -390,7 +381,7 @@ $$\\text{mg/dL} = \\text{mmol/L} \\times 38.67$$
 st.subheader("Scatter Plot: TG vs VLDL")
 fig, ax = plt.subplots(figsize=(12, 8))
 
-# Color points based on VLDL threshold
+# x = TG, y = vldl -- hue changes on vldl > 4
 sns.scatterplot(
     data=dataset, x='TG', y='VLDL', ax=ax,
     hue=dataset['VLDL'] > 4, palette={True: 'red', False: 'blue'}, legend=False,
@@ -477,6 +468,7 @@ st.write("Updated dataset shape:", dataset.shape)
 # EDA Section
 st.header("Data Exploration")
 st.header("Categorical Features and population overview")
+
 
 col1, col2, col3 = st.columns(3)
 
@@ -566,40 +558,27 @@ We can see in the correlation heatmap that the features more correlated with CLA
 Let's explore these key features in more detail.
 """)
 
-# Create plots for these key features
+# Create plots for these key features in 3 columns with description below each plot
 key_features = ['HbA1c', 'BMI', 'AGE']
+feature_titles = ["HbA1c by Diabetes Status", "BMI by Diabetes Status", "Age by Diabetes Status"]
+feature_descriptions = [
+    "Clearly higher values in diabetic patients, as expected since it directly measures blood glucose control.",
+    "Diabetic patients tend to have higher BMI values, though significant overlap exists on the lower end.",
+    "Diabetic patients are generally older, but the wide distribution shows diabetes affects people across varied age ranges."
+]
 
-# Box plots comparing distribution by diabetes status (horizontal layout)
-st.subheader("Distribution Comparison by Diabetes Status")
+col1, col2, col3 = st.columns(3)
+cols = [col1, col2, col3]
 
-# Create a single figure with 3 subplots in a row
-fig, axes = plt.subplots(1, 3, figsize=(12, 8))
-
-# Create boxplots for each key feature
-sns.boxplot(x='CLASS', y='HbA1c', data=dataset, ax=axes[0], palette=['lightblue', 'salmon'])
-sns.boxplot(x='CLASS', y='BMI', data=dataset, ax=axes[1], palette=['lightblue', 'salmon'])
-sns.boxplot(x='CLASS', y='AGE', data=dataset, ax=axes[2], palette=['lightblue', 'salmon'])
-
-# Set titles and labels
-axes[0].set_title("HbA1c by Diabetes Status")
-axes[1].set_title("BMI by Diabetes Status")
-axes[2].set_title("Age by Diabetes Status")
-
-# Set x-axis labels
-for ax in axes:
-    ax.set_xlabel("Diabetes Status (0=No, 1=Yes)")
-
-# Adjust layout to make room for text
-plt.tight_layout()
-st.pyplot(fig)
-
-# Add interpretations under each plot
-st.markdown("""
-**Key Observations**:
-- **HbA1c**: Clearly higher values in diabetic patients, as expected since it directly measures blood glucose control.
-- **BMI**: Diabetic patients tend to have higher BMI values, though significant overlap exists on the lower end.
-- **Age**: Diabetic patients are generally older, but the wide distribution shows diabetes affects people across varied age ranges.
-""")
+for i, (feature, title, desc) in enumerate(zip(key_features, feature_titles, feature_descriptions)):
+    with cols[i]:
+        st.subheader(title)
+        fig, ax = plt.subplots(figsize=(4, 8))
+        sns.boxplot(x='CLASS', y=feature, data=dataset, ax=ax, palette=['lightblue', 'salmon'])
+        ax.set_xlabel("Diabetes Status (0=No, 1=Yes)")
+        ax.set_ylabel(feature)
+        st.pyplot(fig)
+        st.write(desc)
 
 # 3D scatter to visualize the three features
 st.subheader("3D Visualization of Key Features")
@@ -635,7 +614,10 @@ st.markdown("""
 
 st.markdown("""---""")
 
-# Prediction Section
+
+
+# ========================================================================
+# --- Prediction Section ---
 st.header("Model Selection and Training")
 
 # Define target and features
@@ -655,7 +637,6 @@ Training a machine learning model requires dividing the dataset into:
 X_train, X_test, y_train, y_test = train_test_split(
     X, y, test_size=0.2, random_state=95)
 
-# Class imbalance
 st.markdown("""
 ### Class Imbalance in Diabetes Dataset
 This dataset has more diabetic than non-diabetic patients, creating a class imbalance.
@@ -674,6 +655,7 @@ class_1 = train_df[train_df['CLASS'] == 1]
 
 # Display class distribution before balancing
 st.subheader("Class Distribution in Training Set")
+
 before_counts = y_train.value_counts()
 fig, ax = plt.subplots(figsize=(12, 4))
 sns.barplot(x=before_counts.index, y=before_counts.values, ax=ax)
@@ -766,8 +748,8 @@ prediction_balanced_knn = bal_knn.predict(X_test)
 prediction_balanced_r_forest = bal_rnd_forest.predict(X_test)
 
 
-
-# ==== BENCHMARK ====
+# =======================================================================
+# ==== BENCHMARKS ====
 
 # Define the models' list
 models = ['Logistic Regression',
@@ -792,7 +774,7 @@ vector_prediction_imbalanced = [prediction_log_reg,
 
 
 
-# == BALANCED DATASETS ==
+# ----- BALANCED DATASETS ------
 # preparing empty lists to store the metrics
 balanced_accuracy =     []
 balanced_precision =    []
@@ -820,7 +802,7 @@ balanced_metrics_df = pd.DataFrame({
 
 
 
-# == imbalanced DATASETS ==
+# ----- IMBALANCED DATASETS ------
 imbalanced_accuracy =   []
 imbalanced_precision =  []
 imbalanced_f1 =         []
@@ -844,9 +826,8 @@ imbalanced_metrics_df = pd.DataFrame({
     'Recall (1)':   imbalanced_recall_1
 })
 
-# ==== PLOTTING BENCHMARKS ====
 
-# Benchmark all models
+# ==== PLOTTING BENCHMARKS ====
 st.subheader("Performance Metrics Comparison")
 st.markdown("Comparing model performance on balanced vs. imbalanced datasets")
 
@@ -1023,21 +1004,16 @@ new_data = user_input() # calling the function to create the input form
 
 # Add prediction button
 if st.button("Predict"):
-    # Check if model is trained, train it if not
-    if not hasattr(model, "classes_"):  # This attribute exists after fitting
-        st.warning("Model not trained yet. Training model with balanced dataset...")
-        model.fit(X_train_bal, y_train_bal)
-        st.success(f"{selected_model_name} trained on balanced dataset!")
-
+    
     prediction = model.predict(new_data)[0]
-    
-    # Get prediction probability/confidence if the model supports it
-    if hasattr(model, "predict_proba"):     #'hasattr' checks if the model has the method 'predict_proba' 
-        proba = model.predict_proba(new_data)[0]
-        confidence = proba[int(prediction)] * 100  # Convert to percentage
-    else:
-        confidence = "Not available for this model"
-    
+    # ! all models used has predict_proba method. no need to check
+    #if hasattr(model, "predict_proba"):     #'hasattr' checks if the model has the method 'predict_proba' 
+    #     proba = model.predict_proba(new_data)[0]
+    #     confidence = proba[int(prediction)] * 100  # Convert to percentage
+    # else:
+    # confidence = "Not available for this model"
+    proba = model.predict_proba(new_data)[0]
+    confidence = proba[int(prediction)] * 100
 
     # Create columns for better layout
     if prediction == 1:
@@ -1047,44 +1023,49 @@ if st.button("Predict"):
         st.markdown("### Prediction:")
         st.markdown("**Non-Diabetic** (Class 0)")
 
-    if isinstance(confidence, float):
-        st.markdown("### Confidence Level:")
-        
-        st.progress(confidence/100) #confidence as a st progress line
-        st.markdown(f"**{confidence:.1f}%** confidence in this prediction") # <**> for bold MD type inside f-string
-        
-    else:
-        st.markdown(f"**Confidence: {confidence}**")    
+    # if isinstance(confidence, float):
+    #     st.markdown("### Confidence Level:")
+    #     
+    #     st.progress(confidence/100) #confidence as a st progress line
+    #     st.markdown(f"**{confidence:.1f}%** confidence in this prediction") # <**> for bold MD type inside f-string
+    #     
+    # else:
+    #     st.markdown(f"**Confidence: {confidence}**")  
+    st.markdown("### Confidence Level:")  
+    st.progress(confidence/100) #confidence as a st progress line
+    st.markdown(f"**{confidence:.1f}%** confidence in this prediction") # <**> for bold MD type inside f-string
+
 
 
 # Create a function to evaluate all models on user input (this function is not generic!)
 def evaluate_all_models(input_data):
-    # Define all models
+
     models_config = {
-        'Logistic Regression (Balanced)': bal_log_reg,
-        'Decision Tree (Balanced)': bal_decision_tree,
-        'K-Nearest Neighbors (Balanced)': bal_knn,
-        'Random Forest (Balanced)': bal_rnd_forest,
-        'Logistic Regression (Imbalanced)': log_reg,
-        'Decision Tree (Imbalanced)': decision_tree,
-        'K-Nearest Neighbors (Imbalanced)': knn,
-        'Random Forest (Imbalanced)': rnd_forest
+        'BAL - Logistic Regression': bal_log_reg,
+        'BAL - Decision Tree': bal_decision_tree,
+        'BAL - K-Nearest Neighbor': bal_knn,
+        'BAL - Random Forest': bal_rnd_forest,
+        'NON-BAL - Logistic Regression': log_reg,
+        'NON-BAL - Decision Tree': decision_tree,
+        'NON-BAL - K-Nearest Neighbors': knn,
+        'NON-BAL - Random Forest': rnd_forest
     }
     
-    # Store results
     results = []
-    
+
     # Iterate through all models
     for model_name, model in models_config.items():
-        # Make prediction
         prediction = model.predict(input_data)[0]
         
+        # see line 1019
         # Get confidence if available
-        if hasattr(model, "predict_proba"):
-            proba = model.predict_proba(input_data)[0]
-            confidence = proba[int(prediction)] * 100
-        else:
-            confidence = None
+        # if hasattr(model, "predict_proba"):
+        #     proba = model.predict_proba(input_data)[0]
+        #     confidence = proba[int(prediction)] * 100
+        # else:
+        #     confidence = None
+        proba = model.predict_proba(input_data)[0]
+        confidence = proba[int(prediction)] * 100
             
         # Store results
         results.append({
@@ -1108,7 +1089,6 @@ if st.button("Benchmark All Models on This Input"):
     st.dataframe(benchmark_results)
 
     st.subheader("Prediction Confidence by Model")
-    
     benchmark_results['Color'] = benchmark_results['Prediction'].map({
         'Diabetic': 'red', 
         'Non-Diabetic': 'blue'
@@ -1147,3 +1127,6 @@ st.markdown("""
 - Machine learning models were trained and evaluated on both balanced and imbalanced datasets.
 - A comparison of model performance metrics highlighted the importance of balancing the dataset for better predictive accuracy.
             """)
+
+
+
