@@ -959,7 +959,6 @@ recall_0 = recall_score(y_test, y_pred, pos_label=0)
 recall_1 = recall_score(y_test, y_pred, pos_label=1)
 f1 = f1_score(y_test, y_pred)
 
-# Display metrics
 st.subheader(f"Model Evaluation ({training_set} training)")
 
 # metrics on two colimns
@@ -999,7 +998,6 @@ st.header("Make a New Prediction")
 st.markdown("Adjust the sliders below to input values and click 'Predict' to get a diabetes prediction.")
 
 
-# Execute user_input() to create the input form
 new_data = user_input() # calling the function to create the input form
 
 # Add prediction button
