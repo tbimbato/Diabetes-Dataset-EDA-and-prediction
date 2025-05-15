@@ -16,7 +16,7 @@ import seaborn as sns
 from matplotlib.patches import Patch
 
 # ======================================================================
-# to run streamlit webapp run: 'streamlit run ST_EDA_prediciton.py' in the terminal (same dir of python script)
+# to run streamlit webapp run: 'streamlit run ST_EDA_prediction.py' in the terminal (same dir of python script)
 # ======================================================================
 
 # Defining a function to create a row of data based on user input via webapp ---
@@ -525,10 +525,10 @@ st.markdown("Select two features to visualize their relationship using a scatter
 col1, col2 = st.columns(2)
 
 with col1:
-    feature1 = st.selectbox("Select Feature 1", dataset.columns)
+    feature1 = st.selectbox("Select Feature 1", dataset.columns, index=4) # added default index selection to avoid blank plot in the webapp
 
 with col2:
-    feature2 = st.selectbox("Select Feature 2", dataset.columns)
+    feature2 = st.selectbox("Select Feature 2", dataset.columns, index=10)
 
 fig, ax = plt.subplots(figsize=(12, 8))
 sns.scatterplot(x=dataset[feature1], y=dataset[feature2], ax=ax)
