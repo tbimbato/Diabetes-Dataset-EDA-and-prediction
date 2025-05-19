@@ -219,7 +219,6 @@ st.markdown("---")
 
 # Outlier Detection and Handling Section
 st.header("Outlier Detection and Handling")
-st.subheader("Statistical Summary of Features")
 columns_to_drop = ['Gender', 'AGE']
 stats = dataset.drop(columns=columns_to_drop).describe() # computing stats excluding 'Gender' and 'AGE'
 stats_to_show = stats.loc[['mean', 'std', 'min', 'max']] # preparing to show only mean, std, min and max
