@@ -15,10 +15,12 @@
 
 \section{Introduction}
 
-This document provides an overview of a project aimed at performing exploratory data analysis (EDA) and predictive modeling for diabetes detection. The project is part of the "Programming and Database - Data Science" course at the University of Verona (UNIVR), Academic Year 2024/2025.
+This document provides an overview of a complete data science workflow for diabetes detection, including data cleaning, EDA, model benchmarking, and interactive deployment.
+
+The project compares four classifiers (Logistic Regression, Decision Tree, K-Nearest Neighbors, Random Forest) on a real-world dataset of 1,009 patient records, reaching best held-out accuracy above 98\% (up to 99.5\%).
 
 
-It is important to note that this project is purely educational and should not be considered as having any medical or scientific validity. While it demonstrates the application of data science techniques in healthcare contexts, the results are intended solely for academic purposes and must not be used for professional diagnosis or treatment.
+This work demonstrates technical methodology only and should not be considered a medical diagnostic system. Results must not be used for professional diagnosis or treatment.
 
 
 
@@ -66,7 +68,7 @@ The final phase involves integrating the models into a web application using Str
 \section{Structure of the Repository}
 
 \begin{itemize}
-    \item \texttt{data/}: Contains raw and processed datasets.
+    \item \texttt{datasets/}: Contains raw and processed datasets.
     \item \texttt{notebooks/}: Jupyter notebooks for data cleaning, EDA, and modeling.
     \item \texttt{src/}: Python scripts for model integration and web app development.
 \end{itemize}

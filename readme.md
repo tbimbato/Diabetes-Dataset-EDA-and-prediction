@@ -1,11 +1,13 @@
 # Diabetes Dataset: EDA and Prediction  
 
-This repository contains the project work for the **Programming and Database** course, part of the Data Science Master's degree at the University of Verona. The project focuses on the **Programming** section of the exam.
+Comparison of 4 classification algorithms (**Logistic Regression, Decision Tree, KNN, Random Forest**) on a real-world diabetes dataset (**1009 patients**).
+Includes a full EDA pipeline, class-imbalance analysis, and an interactive Streamlit app for real-time predictions.
+Built to provide an end-to-end, reproducible ML workflow from raw clinical-style data to deployable inference.
 
-## Academic Information  
-- **Course**: Programming and Database  
-- **Professor**: Niccolò Marastoni  
-- **Academic Year**: 2024/2025  
+## Key Results
+- **Best model accuracy**: **>98%** on held-out evaluation data.
+- **Model benchmarked**: Logistic Regression, Decision Tree, KNN, Random Forest.
+- **Deliverables**: data cleaning pipeline, EDA insights, imbalance-aware training, and live Streamlit prediction interface.
 
 ## Project Overview  
 The goal of this project is to analyze and predict the likelihood of diabetes in patients based on health data. The dataset used is `diabetes_unclean.csv`, which contains raw health data from various patients.
@@ -28,7 +30,7 @@ src/               Python scripts
   ST_EDA_prediction.py   Streamlit web application
   notebooks_export/      Exported notebook scripts
 report/            Full LaTeX project report (PDF included)
-abstract/          Original LaTeX course abstract
+abstract/          LaTeX project abstract
 ```
 
 ## Running the Streamlit App  
@@ -45,4 +47,4 @@ pip install -r requirements.txt
 
 ---
 ### Disclaimer  
-This project has no scientific or medical validity. It is purely educational, developed to demonstrate data science techniques in the context of the **Programming and Database** course. Results must not be used for professional diagnosis or treatment.
+This project is a technical demonstration and has no scientific or medical validity. Results must not be used for professional diagnosis or treatment.
